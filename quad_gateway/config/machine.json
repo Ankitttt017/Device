@@ -1,0 +1,514 @@
+{
+  "gateway": {
+    "id": "QUAD-01",
+    "name": "QUAD Edge Gateway 01"
+  },
+  "machine": {
+    "id": "UBE-850T-02",
+    "name": "UBE 850 T - 02"
+  },
+  "connection": {
+    "protocol": "SLMP_3E_BINARY",
+    "host": "192.168.117.201",
+    "port": 5002,
+    "read_only": true,
+    "timeout_seconds": 5.0,
+    "monitoring_timer_250ms": 16
+  },
+  "acquisition": {
+    "poll_interval_seconds": 1.0
+  },
+  "storage": {
+    "database_path": "data/quad_gateway.db"
+  },
+  "mqtt": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 1883,
+    "username": null,
+    "password": null,
+    "client_id": "QUAD-01",
+    "keepalive": 60,
+    "topic_prefix": "quad",
+    "qos": 1,
+    "retain": false,
+    "batch_size": 50,
+    "retry_initial_delay": 2.0,
+    "retry_max_delay": 60.0,
+    "retry_backoff_factor": 2.0
+  },
+  "string_decoding": {
+    "default_byte_order": "little",
+    "encoding": "ascii",
+    "strip_null": true
+  },
+  "registers": [
+    {
+      "tag": "PART_NAME",
+      "address": "D100",
+      "words": 11,
+      "data_type": "string",
+      "unit": null,
+      "description": "Part Name (D100-D110)",
+      "byte_order": "little"
+    },
+    {
+      "tag": "SHOT_YEAR",
+      "address": "D2100",
+      "data_type": "int16",
+      "unit": null,
+      "description": "Shot Year"
+    },
+    {
+      "tag": "SHOT_MONTH",
+      "address": "D2101",
+      "data_type": "int16",
+      "unit": null,
+      "description": "Shot Month"
+    },
+    {
+      "tag": "SHOT_DAY",
+      "address": "D2102",
+      "data_type": "int16",
+      "unit": null,
+      "description": "Shot Day"
+    },
+    {
+      "tag": "SHOT_HOUR",
+      "address": "D2103",
+      "data_type": "int16",
+      "unit": null,
+      "description": "Shot Hour"
+    },
+    {
+      "tag": "SHOT_MINUTE",
+      "address": "D2104",
+      "data_type": "int16",
+      "unit": null,
+      "description": "Shot Minute"
+    },
+    {
+      "tag": "SHOT_SECOND",
+      "address": "D2105",
+      "data_type": "int16",
+      "unit": null,
+      "description": "Shot Second"
+    },
+    {
+      "tag": "SHOT_NO",
+      "address": "D1120",
+      "data_type": "int16",
+      "unit": null,
+      "description": "SHOT NO."
+    },
+    {
+      "tag": "HIGH_SHOT_COUNT",
+      "address": "D947",
+      "data_type": "int16",
+      "unit": null,
+      "description": "HIGH SHOT COUNT"
+    },
+    {
+      "tag": "NG_COUNTER",
+      "address": "D955",
+      "data_type": "int16",
+      "unit": null,
+      "description": "NG COUNTER"
+    },
+    {
+      "tag": "CYCLE_START",
+      "address": "M840",
+      "data_type": "bit",
+      "unit": null,
+      "description": "Cycle Start"
+    },
+    {
+      "tag": "CYCLE_END",
+      "address": "M4598",
+      "data_type": "bit",
+      "unit": null,
+      "description": "Cycle End"
+    },
+    {
+      "tag": "AVG_DIE_CLAMP_TONNAGE_COUNT",
+      "address": "D7472",
+      "data_type": "int16",
+      "unit": null,
+      "description": "AVERAGE DIE CLAMP TONNAGE COUNT"
+    },
+    {
+      "tag": "TIME_FOR_STROKE",
+      "address": "D10470",
+      "data_type": "int16",
+      "unit": "ms",
+      "description": "Time for stroke(ms)"
+    },
+    {
+      "tag": "SHOT_STATUS",
+      "address": "D1301",
+      "data_type": "int16",
+      "unit": null,
+      "description": "Shot Status"
+    },
+    {
+      "tag": "CYCLE_TIME",
+      "address": "D1127",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "CYCLE TIME"
+    },
+    {
+      "tag": "DIE_CLOSE_CORE_IN_TIME",
+      "address": "D1128",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "DIE-CLOSE CORE IN TIME"
+    },
+    {
+      "tag": "POURING_TIME",
+      "address": "D1129",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "POURING TIME"
+    },
+    {
+      "tag": "SHOT_FWD_TIME",
+      "address": "D1130",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "SHOT FWD TIME"
+    },
+    {
+      "tag": "DIE_OPEN_CORE_OUT_TIME",
+      "address": "D1132",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "DIE OPEN CORE OUT TIME"
+    },
+    {
+      "tag": "EJECTOR_TIME",
+      "address": "D1133",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "EJECTOR TIME"
+    },
+    {
+      "tag": "EXTRACT_TIME",
+      "address": "D1134",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "EXTRACT TIME"
+    },
+    {
+      "tag": "SPRAY_TIME",
+      "address": "D1135",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "SPRAY TIME"
+    },
+    {
+      "tag": "CURING_TIME",
+      "address": "D1137",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "sec",
+      "description": "CURING TIME"
+    },
+    {
+      "tag": "V1",
+      "address": "D6900",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "m/sec",
+      "description": "V1"
+    },
+    {
+      "tag": "V2",
+      "address": "D6902",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "m/sec",
+      "description": "V2"
+    },
+    {
+      "tag": "V3",
+      "address": "D6904",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "m/sec",
+      "description": "V3"
+    },
+    {
+      "tag": "V4",
+      "address": "D6906",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "m/sec",
+      "description": "V4"
+    },
+    {
+      "tag": "ACCEL_POINT",
+      "address": "D6908",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "ACCEL. POINT"
+    },
+    {
+      "tag": "DEACEL_POINT",
+      "address": "D6910",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "DEACEL. POINT"
+    },
+    {
+      "tag": "METAL_PRESS",
+      "address": "D6912",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "MPa",
+      "description": "METAL PRESS."
+    },
+    {
+      "tag": "INTEN_TIME",
+      "address": "D6914",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "msec",
+      "description": "INTEN. TIME"
+    },
+    {
+      "tag": "BISCUIT_THICKNESS",
+      "address": "D6916",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "BISCUIT THICKNESS"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_HE_LOW",
+      "address": "D6918",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(HE.LOW)"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_HE_LOW_MN",
+      "address": "D6920",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "MN",
+      "description": "CLAMP TONNAGE(HE.LOW) MN"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_OP_UP",
+      "address": "D6922",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(OP.UP)"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_OP_LOW",
+      "address": "D6924",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(OP.LOW)"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_HE_UP",
+      "address": "D6926",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(HE.UP)"
+    },
+    {
+      "tag": "VACUUM_PRESSURE_D6928",
+      "address": "D6928",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mbar",
+      "description": "VACUUM PRESSURE"
+    },
+    {
+      "tag": "COOLING_WATER_FLOW_MOV",
+      "address": "D6930",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "L/min",
+      "description": "COOLING WATER FLOW RATE (MOV.)"
+    },
+    {
+      "tag": "COOLING_WATER_FLOW_STA",
+      "address": "D6932",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "L/min",
+      "description": "COOLING WATER FLOW RATE (STA.)"
+    },
+    {
+      "tag": "FURNACE_METAL_TEMP",
+      "address": "D6934",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "C",
+      "description": "FURNACE METAL TEMP."
+    },
+    {
+      "tag": "CLAMP_FORCE_PCT",
+      "address": "D1044",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP FORCE (%)"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_T",
+      "address": "D1045",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "T",
+      "description": "CLAMP TONNAGE (T)"
+    },
+    {
+      "tag": "SHOT_ACC_PRESSURE",
+      "address": "D1700",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "MPa",
+      "description": "SHOT ACC. PRESSURE"
+    },
+    {
+      "tag": "INTENSIFICATION_ACC_PRESSURE",
+      "address": "D1701",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "MPa",
+      "description": "INTENSIFICATION ACC. PRESSURE"
+    },
+    {
+      "tag": "JET_COOLING_PRESSURE",
+      "address": "D6954",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "kgf/cm2",
+      "description": "JET COOLING PRESSURE"
+    },
+    {
+      "tag": "FIXED_DIE_TEMP_F1",
+      "address": "D1400",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "C",
+      "description": "Fixed Die Temp (F-1)"
+    },
+    {
+      "tag": "FIXED_DIE_TEMP_F2",
+      "address": "D1401",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "C",
+      "description": "Fixed Die Temp (F-2)"
+    },
+    {
+      "tag": "MOVING_DIE_TEMP_M1",
+      "address": "D1402",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "C",
+      "description": "Moving Die Temp (M-1)"
+    },
+    {
+      "tag": "MOVING_DIE_TEMP_M2",
+      "address": "D1403",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "C",
+      "description": "Moving Die Temp (M-2)"
+    },
+    {
+      "tag": "SLIDE_TEMP_S1",
+      "address": "D1404",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "C",
+      "description": "Slide Temp -1 (S-1)"
+    },
+    {
+      "tag": "FIX_1_FLOW",
+      "address": "D1410",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "Lpm",
+      "description": "FIX. 1 Flow"
+    },
+    {
+      "tag": "FIX_2_FLOW",
+      "address": "D1411",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "Lpm",
+      "description": "FIX. 2 Flow"
+    },
+    {
+      "tag": "FIX_3_FLOW",
+      "address": "D1412",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "Lpm",
+      "description": "FIX. 3 Flow"
+    },
+    {
+      "tag": "MOV_1_FLOW",
+      "address": "D1413",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "Lpm",
+      "description": "Mov. 1 Flow"
+    },
+    {
+      "tag": "MOV_2_FLOW",
+      "address": "D1414",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "Lpm",
+      "description": "Mov. 2 Flow"
+    },
+    {
+      "tag": "MOV_3_FLOW",
+      "address": "D1415",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "Lpm",
+      "description": "Mov. 3 Flow"
+    },
+    {
+      "tag": "VACUUM_PRESSURE_D1416",
+      "address": "D1416",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mmHg",
+      "description": "Vacuum pressure"
+    },
+    {
+      "tag": "STROKE",
+      "address": "D10356",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "Stroke"
+    }
+  ]
+}

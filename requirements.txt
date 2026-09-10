@@ -1,0 +1,9 @@
+# QUAD Gateway Dependencies
+# Core Phase 1 runtime is built strictly on Python Standard Library (socket, struct, json, dataclasses, logging)
+# to guarantee zero-dependency industrial reliability and deterministic edge gateway deployment.
+
+# Phase 3: MQTT Transport Layer
+paho-mqtt>=2.0.0
+
+# Testing (optional test runner)
+pytest>=8.0.0
