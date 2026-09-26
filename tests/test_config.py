@@ -27,7 +27,7 @@ class TestConfigLoader(unittest.TestCase):
         self.assertEqual(config.machine_id, "UBE-850T-02")
         self.assertEqual(config.machine_name, "UBE 850 T - 02")
         self.assertEqual(config.host, "192.168.117.201")
-        self.assertEqual(config.port, 5002)
+        self.assertEqual(config.port, 1027)
         self.assertEqual(config.protocol, "SLMP_3E_BINARY")
         self.assertTrue(config.read_only)
         self.assertEqual(len(config.registers), 60)

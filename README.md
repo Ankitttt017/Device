@@ -77,7 +77,7 @@ Run the comprehensive unit and integration test suite:
 ## 5. Real PLC Validation & Gateway Execution
 
 ### A. Real Mitsubishi PLC Validation:
-Validates network connectivity and the Phase 1 priority register set against the physical machine PLC (`192.168.117.201:5002`):
+Validates network connectivity and the Phase 1 priority register set against the physical machine PLC (`192.168.117.201:1027`):
 ```powershell
 python -m quad_gateway.validate_plc
 ```

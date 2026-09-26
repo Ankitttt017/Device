@@ -203,7 +203,7 @@ def run_plc_validation(
             "    1. Workstation is not connected to the PLC subnet (e.g. 192.168.117.x)."
         )
         logger.warning("    2. Ethernet cable disconnected or PLC powered off.")
-        logger.warning("    3. Local or network firewall is blocking TCP port 5002.")
+        logger.warning(f"    3. Local or network firewall is blocking TCP port {port}.")
         logger.warning(
             "================================================================================"
         )

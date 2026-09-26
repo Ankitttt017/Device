@@ -16,8 +16,6 @@ import time
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("quad_gateway.mqtt")
-
-
 class MQTTPublisher:
     """
     Industrial MQTT Publisher for QUAD Gateway using paho-mqtt.
