@@ -88,11 +88,19 @@ To test offline against the local Mock PLC server:
 python -m quad_gateway.validate_plc --mock
 ```
 
-### B. Production Execution (Live PLC -> SQLite -> MQTT):
+### B. Production Execution (Cycle-Triggered on M4598 -> SQLite -> MQTT):
+By default, the gateway operates in **Cycle-Triggered Mode** (monitoring `M4598` `CYCLE_END` with zero-delay edge detection):
 ```powershell
 python -m quad_gateway.main
 ```
-Or for a single cycle:
+- When `M4598` rises (`0 -> 1`), the complete 60-register shot telemetry is captured instantly and persisted to local SQLite (`data/quad_gateway.db`).
+- When `M4598` falls (`1 -> 0`), the trigger automatically re-arms for the next machine shot.
+
+To force continuous timer-based polling instead:
+```powershell
+python -m quad_gateway.main --continuous
+```
+Or for a single test cycle:
 ```powershell
 python -m quad_gateway.main --once
 ```

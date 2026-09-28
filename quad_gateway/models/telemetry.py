@@ -37,6 +37,7 @@ class AcquisitionEvent:
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     quality: str = "GOOD"
+    trigger: str = "CYCLE_END"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -45,5 +46,6 @@ class AcquisitionEvent:
             "machine_id": self.machine_id,
             "timestamp": self.timestamp,
             "quality": self.quality,
+            "trigger": self.trigger,
             "data": [p.to_dict() for p in self.points]
         }

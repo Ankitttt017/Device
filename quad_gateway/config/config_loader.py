@@ -63,6 +63,9 @@ class MachineConfig:
     registers: List[RegisterConfig] = field(default_factory=list)
     database_path: str = "data/quad_gateway.db"
     mqtt: MQTTConfig = field(default_factory=MQTTConfig)
+    acquisition_mode: str = "cycle_triggered"
+    trigger_bit: str = "M4598"
+    trigger_poll_ms: int = 50
 
 
 def parse_device_address(address_str: str) -> Tuple[str, int]:
@@ -127,6 +130,15 @@ def load_machine_config(config_path: str) -> MachineConfig:
     timeout = float(conn_sec.get("timeout_seconds", 5.0))
     timer_250ms = int(conn_sec.get("monitoring_timer_250ms", 16))
     poll_interval = float(acq_sec.get("poll_interval_seconds", 1.0))
+    acq_mode = str(acq_sec.get("mode", "cycle_triggered")).lower()
+    trigger_bit = str(acq_sec.get("trigger_bit", "M4598")).strip().upper()
+    trigger_poll_ms = int(acq_sec.get("trigger_poll_ms", 50))
+
+    # Validate trigger bit format
+    try:
+        parse_device_address(trigger_bit)
+    except ConfigurationError as e:
+        raise ConfigurationError(f"Invalid acquisition trigger_bit: {e}")
 
     # 3. Validate registers
     raw_registers = data.get("registers", [])
@@ -227,5 +239,8 @@ def load_machine_config(config_path: str) -> MachineConfig:
         poll_interval_seconds=poll_interval,
         registers=registers,
         database_path=database_path,
-        mqtt=mqtt_config
+        mqtt=mqtt_config,
+        acquisition_mode=acq_mode,
+        trigger_bit=trigger_bit,
+        trigger_poll_ms=trigger_poll_ms,
     )

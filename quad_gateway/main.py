@@ -7,6 +7,7 @@ Target Flow:
 PLC -> SLMP 3E Binary -> Python Driver -> Collector -> Normalized Console Output
 """
 import argparse
+from datetime import datetime
 import json
 import os
 import signal
@@ -30,16 +31,28 @@ from quad_gateway.utils.logger import setup_logger
 logger = setup_logger("quad_gateway")
 
 
-def format_points_table(points: list) -> str:
+def format_points_table(
+    points: list,
+    title_banner: Optional[str] = None,
+    cycle_end_time: Optional[str] = None,
+) -> str:
     """
     Renders telemetry points as a clean industrial console table.
     """
     lines = []
     header = f"{'TAG':<32} {'ADDRESS':<10} {'TYPE':<15} {'RAW VAL':<15} {'DECODED VAL':<25} {'UNIT':<10} {'STATUS'}"
     separator = "-" * len(header)
+    if title_banner:
+        lines.append("=" * len(header))
+        lines.append(title_banner)
     lines.append(separator)
     lines.append(header)
     lines.append(separator)
+
+    if cycle_end_time:
+        lines.append(
+            f"{'CYCLE_END_TIME':<32} {'M4598':<10} {'datetime':<15} {'1':<15} {cycle_end_time:<25} {'IST':<10} GOOD"
+        )
 
     for p in points:
         raw_str = str(p.raw_value) if p.raw_value is not None else "ERR"
@@ -61,6 +74,9 @@ def run_gateway(
     override_db: Optional[str] = None,
     no_mqtt: bool = False,
     fake_mqtt: bool = False,
+    force_continuous: bool = False,
+    override_trigger_bit: Optional[str] = None,
+    override_trigger_poll_ms: Optional[int] = None,
 ):
     """
     Initializes and executes QUAD Gateway with local SQLite persistence and MQTT synchronization.
@@ -167,49 +183,191 @@ def run_gateway(
 
     cycle_count = 0
     try:
-        while not stop_requested:
-            cycle_count += 1
-            logger.info(f"--- Starting Acquisition Cycle #{cycle_count} ---")
+        if single_cycle:
+            # Single acquisition cycle (e.g. for testing / one-shot validation)
+            logger.info("--- Executing Single Acquisition Cycle (--once) ---")
             cycle_start = time.time()
+            event = collector.collect_cycle(trigger_type="MANUAL_SINGLE")
+            duration = time.time() - cycle_start
+            logger.info(
+                f"Single cycle completed in {duration:.3f}s. "
+                f"Points: {len(event.points)}, Event UUID: {event.event_id}, Quality: {event.quality}"
+            )
+            storage.insert_event_and_queue(event)
+            logger.info(
+                f"Successfully persisted event {event.event_id} to SQLite ({db_path}) with status PENDING."
+            )
+            if sync_manager:
+                try:
+                    sync_res = sync_manager.sync_pending_events()
+                    if sync_res["published"] > 0:
+                        logger.info(f"MQTT Sync: {sync_res['published']} event(s) published.")
+                except Exception as e:
+                    logger.warning(f"MQTT sync error: {e}")
+            print(format_points_table(event.points, cycle_end_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
+        elif force_continuous or config.acquisition_mode == "continuous":
+            # Continuous timer-based polling
+            logger.info(f"Starting continuous polling mode (interval: {config.poll_interval_seconds}s)...")
+            while not stop_requested:
+                cycle_count += 1
+                logger.info(f"--- Starting Acquisition Cycle #{cycle_count} ---")
+                cycle_start = time.time()
+                try:
+                    event = collector.collect_cycle(trigger_type="PERIODIC")
+                    duration = time.time() - cycle_start
+                    logger.info(
+                        f"Acquisition Cycle #{cycle_count} completed in {duration:.3f}s. "
+                        f"Points: {len(event.points)}, Event UUID: {event.event_id}, Quality: {event.quality}"
+                    )
+                    storage.insert_event_and_queue(event)
+                    logger.info(
+                        f"Successfully persisted event {event.event_id} to SQLite ({db_path}) with status PENDING."
+                    )
+                    if sync_manager:
+                        try:
+                            sync_res = sync_manager.sync_pending_events()
+                            if sync_res["published"] > 0:
+                                logger.info(
+                                    f"MQTT Sync: {sync_res['published']} event(s) published to broker."
+                                )
+                        except Exception as e:
+                            logger.warning(f"Non-fatal error in MQTT sync cycle: {e}")
+                    print(format_points_table(event.points, cycle_end_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                except Exception as e:
+                    logger.error(f"Unexpected error during acquisition cycle: {e}")
+
+                time.sleep(config.poll_interval_seconds)
+
+        else:
+            # High-Speed Shot/Cycle-Triggered Mode on M4598 (Approach B: Shot/Cycle-Triggered)
+            trigger_bit = override_trigger_bit or config.trigger_bit
+            trigger_poll_ms = override_trigger_poll_ms or config.trigger_poll_ms
+            poll_sleep_sec = max(trigger_poll_ms / 1000.0, 0.01)
+
+            logger.info("==================================================")
+            logger.info("  CYCLE-TRIGGERED ACQUISITION ENGINE (M4598)      ")
+            logger.info(f"  Trigger Bit:      {trigger_bit} (CYCLE_END)")
+            logger.info(f"  Trigger Poll:     {trigger_poll_ms} ms")
+            logger.info(f"  Detection:        Rising Edge (0 -> 1)")
+            logger.info(f"  Storage Target:   {db_path}")
+            logger.info("==================================================")
+
+            # Determine initial state of trigger bit
             try:
-                event = collector.collect_cycle()
-                duration = time.time() - cycle_start
-                logger.info(
-                    f"Acquisition Cycle #{cycle_count} completed in {duration:.3f}s. "
-                    f"Points: {len(event.points)}, Event UUID: {event.event_id}, Quality: {event.quality}"
-                )
-
-                # Persist event & create PENDING sync_queue entry in atomic SQLite transaction
-                storage.insert_event_and_queue(event)
-                logger.info(
-                    f"Successfully persisted event {event.event_id} to SQLite ({db_path}) with status PENDING."
-                )
-
-                # Attempt MQTT synchronization (non-blocking, never interrupts PLC acquisition)
-                if sync_manager:
-                    try:
-                        sync_res = sync_manager.sync_pending_events()
-                        if sync_res["published"] > 0:
-                            logger.info(
-                                f"MQTT Sync: {sync_res['published']} event(s) published to broker (status -> SENDING)."
-                            )
-                        elif sync_res["status"] == "OFFLINE":
-                            logger.debug("MQTT broker offline; events safely retained as PENDING in SQLite.")
-                    except Exception as e:
-                        logger.warning(f"Non-fatal error in MQTT sync cycle: {e}")
-
-                # Output formatted table
-                table_output = format_points_table(event.points)
-                print(table_output)
-
+                initial_bit = collector.read_bit_value(trigger_bit)
             except Exception as e:
-                logger.error(f"Unexpected error during acquisition cycle: {e}")
+                logger.warning(f"Could not read initial state of {trigger_bit}: {e}. Defaulting to 0.")
+                initial_bit = 0
 
-            if single_cycle:
-                break
+            last_bit_state = initial_bit
+            if initial_bit == 1:
+                logger.info(
+                    f"Trigger bit {trigger_bit} is currently HIGH (1). "
+                    "Waiting for cycle reset (1 -> 0 -> 1)..."
+                )
+            else:
+                logger.info(
+                    f"Trigger bit {trigger_bit} is currently LOW (0). "
+                    "ARMED: Monitoring for machine Shot Completion (0 -> 1)..."
+                )
 
-            time.sleep(config.poll_interval_seconds)
+            consecutive_errors = 0
+            while not stop_requested:
+                try:
+                    current_bit = collector.read_bit_value(trigger_bit)
+                    consecutive_errors = 0
+                except (SLMPConnectionError, SLMPTimeoutError, OSError) as e:
+                    consecutive_errors += 1
+                    if consecutive_errors == 1 or consecutive_errors % 50 == 0:
+                        logger.warning(f"Connection issue polling trigger bit {trigger_bit}: {e}. Retrying...")
+                    time.sleep(0.5)
+                    continue
+                except Exception as e:
+                    logger.error(f"Unexpected error polling trigger bit {trigger_bit}: {e}")
+                    time.sleep(0.5)
+                    continue
+
+                # Rising edge: 0 -> 1 (Shot complete!)
+                if last_bit_state == 0 and current_bit == 1:
+                    cycle_count += 1
+                    shot_start = time.time()
+                    logger.info("=" * 70)
+                    logger.info(
+                        f"⚡ [CYCLE_END TRIGGER DETECTED] Rising edge on {trigger_bit} (0 -> 1)!"
+                    )
+                    logger.info("⚡ Acquiring complete shot telemetry without delay...")
+
+                    try:
+                        event = collector.collect_cycle(trigger_type="CYCLE_END")
+                        duration = time.time() - shot_start
+
+                        shot_no = next((p.value for p in event.points if p.tag == "SHOT_NO"), "N/A")
+                        cycle_time = next((p.value for p in event.points if p.tag == "CYCLE_TIME"), "N/A")
+                        total_shots = next((p.value for p in event.points if p.tag == "HIGH_SHOT_COUNT"), "N/A")
+                        furnace_temp = next((p.value for p in event.points if p.tag == "FURNACE_METAL_TEMP"), "N/A")
+                        pouring_val = next((p.value for p in event.points if p.tag == "POURING_TIME"), "N/A")
+
+                        # Cycle End DateTime (Local IST time, strictly matching Ricosys cycletime EndDateTime)
+                        cycle_end_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                        # Format scaled process times for display
+                        cycle_sec_str = f"{cycle_time / 10.0:.1f}s" if isinstance(cycle_time, (int, float)) and cycle_time > 100 else f"{cycle_time}s"
+                        pouring_str = f"{pouring_val / 10.0:.2f}s" if isinstance(pouring_val, (int, float)) and pouring_val > 10 else f"{pouring_val}s"
+
+                        logger.info(
+                            f"✅ [SHOT COMPLETE] Counter: {shot_no} | "
+                            f"Cycle End DateTime: {cycle_end_str} | "
+                            f"Cycle Time: {cycle_sec_str} | "
+                            f"Pouring: {pouring_str} | "
+                            f"Furnace: {furnace_temp}°C | "
+                            f"Acquired in: {duration:.3f}s"
+                        )
+
+                        # Save immediately into SQLite local database
+                        storage.insert_event_and_queue(event)
+                        logger.info(
+                            f"💾 [LOCAL DB SAVED] Counter #{shot_no} (UUID: {event.event_id}) "
+                            f"persisted at {cycle_end_str} to SQLite ({db_path}) with status PENDING."
+                        )
+
+                        # MQTT publishing
+                        if sync_manager:
+                            try:
+                                sync_res = sync_manager.sync_pending_events()
+                                if sync_res["published"] > 0:
+                                    logger.info(f"📡 [MQTT SYNC] Counter #{shot_no} published to MQTT broker.")
+                                elif sync_res["status"] == "OFFLINE":
+                                    logger.debug("MQTT broker offline; shot safely queued in SQLite.")
+                            except Exception as me:
+                                logger.warning(f"MQTT sync warning: {me}")
+
+                        banner = (
+                            f"  QUAD GATEWAY SHOT REPORT | Counter: {shot_no} | "
+                            f"Cycle End DateTime: {cycle_end_str} | Cycle Time: {cycle_sec_str}"
+                        )
+                        table_output = format_points_table(
+                            event.points,
+                            title_banner=banner,
+                            cycle_end_time=cycle_end_str,
+                        )
+                        print(table_output, flush=True)
+                        logger.info("=" * 70)
+
+                    except Exception as e:
+                        logger.error(f"Error acquiring or persisting shot cycle: {e}")
+
+                    last_bit_state = 1
+
+                # Falling edge: 1 -> 0 (Machine re-armed for next cycle)
+                elif last_bit_state == 1 and current_bit == 0:
+                    logger.info(
+                        f"🔄 [CYCLE_END RESET] {trigger_bit} returned to 0. "
+                        "ARMED: Ready for next shot cycle!"
+                    )
+                    last_bit_state = 0
+
+                time.sleep(poll_sleep_sec)
 
     finally:
         driver.disconnect()
@@ -225,6 +383,9 @@ def main():
     default_cfg = os.path.join(os.path.dirname(__file__), "config", "machine.json")
     parser.add_argument("--config", default=default_cfg, help="Path to machine.json configuration")
     parser.add_argument("--once", action="store_true", help="Execute a single acquisition cycle and exit")
+    parser.add_argument("--continuous", action="store_true", help="Force continuous timer polling instead of cycle-triggered")
+    parser.add_argument("--trigger-bit", default=None, help="Override trigger bit address (default: M4598)")
+    parser.add_argument("--trigger-poll-ms", type=int, default=None, help="Trigger polling interval in milliseconds (default: 50)")
     parser.add_argument("--mock", action="store_true", help="Run against a local in-memory Mock SLMP PLC server")
     parser.add_argument("--host", default=None, help="Override PLC host IP (e.g. for mock testing)")
     parser.add_argument("--port", type=int, default=None, help="Override PLC port (e.g. for mock testing)")
@@ -256,6 +417,9 @@ def main():
         override_db=args.db,
         no_mqtt=args.no_mqtt,
         fake_mqtt=args.fake_mqtt,
+        force_continuous=args.continuous,
+        override_trigger_bit=args.trigger_bit,
+        override_trigger_poll_ms=args.trigger_poll_ms,
     )
 
 

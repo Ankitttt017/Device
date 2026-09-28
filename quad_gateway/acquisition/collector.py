@@ -6,7 +6,11 @@ data type rules, and produces normalized TelemetryDataPoints and AcquisitionEven
 import logging
 from typing import Any, List, Optional
 
-from quad_gateway.config.config_loader import MachineConfig, RegisterConfig
+from quad_gateway.config.config_loader import (
+    MachineConfig,
+    RegisterConfig,
+    parse_device_address,
+)
 from quad_gateway.drivers.slmp.decoder import (
     decode_bit,
     decode_int16,
@@ -86,7 +90,20 @@ class AcquisitionCollector:
             f"{len(self.bit_registers)} bit registers."
         )
 
-    def collect_cycle(self) -> AcquisitionEvent:
+    def read_bit_value(self, address_str: str) -> int:
+        """
+        Reads a single bit register (e.g. 'M4598') directly from the PLC.
+        Returns 0 or 1.
+        """
+        dev_type, dev_num = parse_device_address(address_str)
+        bit_vals = self.driver.read_bits(
+            device_type=dev_type,
+            head_device_number=dev_num,
+            points=1
+        )
+        return bit_vals[0] if bit_vals else 0
+
+    def collect_cycle(self, trigger_type: str = "CYCLE_END") -> AcquisitionEvent:
         """
         Executes one complete read cycle across all configured registers.
         Returns a normalized AcquisitionEvent.
@@ -174,7 +191,8 @@ class AcquisitionCollector:
             gateway_id=self.config.gateway_id,
             machine_id=self.config.machine_id,
             points=points,
-            quality=cycle_quality
+            quality=cycle_quality,
+            trigger=trigger_type
         )
 
     def _decode_register(self, reg: RegisterConfig, raw_bytes: bytes) -> TelemetryDataPoint:
