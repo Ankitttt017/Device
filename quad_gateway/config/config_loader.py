@@ -210,8 +210,8 @@ def load_machine_config(config_path: str) -> MachineConfig:
     mqtt_sec = data.get("mqtt", {})
     mqtt_config = MQTTConfig(
         enabled=bool(mqtt_sec.get("enabled", True)),
-        host=str(mqtt_sec.get("host", "127.0.0.1")),
-        port=int(mqtt_sec.get("port", 1883)),
+        host=str(os.environ.get("MQTT_BROKER_HOST") or mqtt_sec.get("host", "172.16.4.104")),
+        port=int(os.environ.get("MQTT_BROKER_PORT") or mqtt_sec.get("port", 1883)),
         username=mqtt_sec.get("username"),
         password=mqtt_sec.get("password"),
         client_id=str(mqtt_sec.get("client_id", gateway_sec.get("id", "QUAD-01"))),
