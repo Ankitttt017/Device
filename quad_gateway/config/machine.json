@@ -10,7 +10,7 @@
   "connection": {
     "protocol": "SLMP_3E_BINARY",
     "host": "192.168.117.201",
-    "port": 1027,
+    "port": 1026,
     "read_only": true,
     "timeout_seconds": 5.0,
     "monitoring_timer_250ms": 16
@@ -19,7 +19,7 @@
     "mode": "cycle_triggered",
     "trigger_bit": "M4598",
     "trigger_edge": "rising",
-    "trigger_poll_ms": 50,
+    "trigger_poll_ms": 250,
     "poll_interval_seconds": 1.0
   },
   "storage": {

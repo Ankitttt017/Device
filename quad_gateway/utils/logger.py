@@ -37,10 +37,16 @@ def setup_logger(
     logger.addHandler(console_handler)
     logger.propagate = False
 
-    # Optional file handler
+    # Optional file handler (Rotating to prevent filling up disk/SD cards)
     if log_file:
+        from logging.handlers import RotatingFileHandler
         os.makedirs(os.path.dirname(os.path.abspath(log_file)), exist_ok=True)
-        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        file_handler = RotatingFileHandler(
+            log_file,
+            maxBytes=10 * 1024 * 1024,  # 10 MB per file
+            backupCount=5,              # Keep 5 backups
+            encoding="utf-8"
+        )
         file_handler.setFormatter(formatter)
         file_handler.setLevel(numeric_level)
         logger.addHandler(file_handler)

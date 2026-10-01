@@ -40,7 +40,7 @@ from quad_gateway.drivers.slmp.slmp_driver import (
 )
 from quad_gateway.utils.logger import setup_logger
 
-logger = setup_logger("quad_gateway.validate_plc")
+logger = setup_logger("quad_gateway.validate_plc", log_file="logs/gateway.log")
 
 # Phase 1 Target Initial Validation Registers
 TARGET_REGISTER_TAGS = [

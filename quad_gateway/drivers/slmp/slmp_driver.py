@@ -84,6 +84,23 @@ class SLMPDriver:
             # Enable keepalive
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
 
+            # Linux/Raspberry Pi specific TCP keepalive settings (drops dead sockets quickly)
+            if hasattr(socket, "TCP_KEEPIDLE"):
+                try:
+                    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 5)
+                except OSError:
+                    pass
+            if hasattr(socket, "TCP_KEEPINTVL"):
+                try:
+                    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 2)
+                except OSError:
+                    pass
+            if hasattr(socket, "TCP_KEEPCNT"):
+                try:
+                    sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 3)
+                except OSError:
+                    pass
+
             sock.connect((self.host, self.port))
             self._socket = sock
             self._is_connected = True
@@ -108,6 +125,10 @@ class SLMPDriver:
 
     def _cleanup_socket(self) -> None:
         if self._socket:
+            try:
+                self._socket.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
             try:
                 self._socket.close()
             except Exception as e:

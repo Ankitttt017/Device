@@ -28,7 +28,7 @@ from quad_gateway.storage.database import StorageManager
 from quad_gateway.sync.sync_manager import SyncManager
 from quad_gateway.utils.logger import setup_logger
 
-logger = setup_logger("quad_gateway")
+logger = setup_logger("quad_gateway", log_file="logs/gateway.log")
 
 
 def format_points_table(
@@ -279,13 +279,13 @@ def run_gateway(
                     consecutive_errors = 0
                 except (SLMPConnectionError, SLMPTimeoutError, OSError) as e:
                     consecutive_errors += 1
-                    if consecutive_errors == 1 or consecutive_errors % 50 == 0:
-                        logger.warning(f"Connection issue polling trigger bit {trigger_bit}: {e}. Retrying...")
-                    time.sleep(0.5)
+                    if consecutive_errors == 1 or consecutive_errors % 10 == 0:
+                        logger.warning(f"Connection issue polling trigger bit {trigger_bit}: {e}. Waiting 3s for PLC channel reset...")
+                    time.sleep(3.0)
                     continue
                 except Exception as e:
                     logger.error(f"Unexpected error polling trigger bit {trigger_bit}: {e}")
-                    time.sleep(0.5)
+                    time.sleep(2.0)
                     continue
 
                 # Rising edge: 0 -> 1 (Shot complete!)
@@ -331,12 +331,20 @@ def run_gateway(
                             f"persisted at {cycle_end_str} to SQLite ({db_path}) with status PENDING."
                         )
 
-                        # MQTT publishing
+                        # MQTT publishing (Drains pending queue including any offline backlog)
                         if sync_manager:
                             try:
-                                sync_res = sync_manager.sync_pending_events()
-                                if sync_res["published"] > 0:
-                                    logger.info(f"📡 [MQTT SYNC] Counter #{shot_no} published to MQTT broker.")
+                                total_published = 0
+                                while True:
+                                    sync_res = sync_manager.sync_pending_events(batch_size=50)
+                                    if sync_res["published"] > 0:
+                                        total_published += sync_res["published"]
+                                        if sync_res["published"] < 50:
+                                            break
+                                    else:
+                                        break
+                                if total_published > 0:
+                                    logger.info(f"📡 [MQTT SYNC] {total_published} event(s) published to MQTT broker.")
                                 elif sync_res["status"] == "OFFLINE":
                                     logger.debug("MQTT broker offline; shot safely queued in SQLite.")
                             except Exception as me:

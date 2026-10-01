@@ -4,6 +4,7 @@ Orchestrates reading of configured PLC registers, decodes them according to
 data type rules, and produces normalized TelemetryDataPoints and AcquisitionEvents.
 """
 import logging
+import time
 from typing import Any, List, Optional
 
 from quad_gateway.config.config_loader import (
@@ -130,6 +131,9 @@ class AcquisitionCollector:
 
                     point = self._decode_register(reg, reg_raw_bytes)
                     points.append(point)
+
+                # Micro-pause (5ms) to prevent overflowing Mitsubishi PLC Ethernet buffer
+                time.sleep(0.005)
 
             except Exception as e:
                 logger.error(
