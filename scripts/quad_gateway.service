@@ -1,0 +1,18 @@
+[Unit]
+Description=QUAD Gateway Industrial Edge Telemetry Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/Device
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 -m quad_gateway.main
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target

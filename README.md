@@ -118,3 +118,21 @@ python -m quad_gateway.main --mock --fake-mqtt --once
 ```powershell
 python -m quad_gateway.main --mock
 ```
+
+---
+
+## 6. Raspberry Pi Production Auto-Start (Power-on Boot)
+
+To automatically run the gateway on Raspberry Pi as a persistent background service when power is applied:
+
+```bash
+chmod +x scripts/install_service.sh
+./scripts/install_service.sh
+```
+
+To manage the background service:
+- **Status:** `sudo systemctl status quad_gateway`
+- **Live Logs:** `sudo journalctl -u quad_gateway -f`
+- **Stop:** `sudo systemctl stop quad_gateway`
+- **Restart:** `sudo systemctl restart quad_gateway`
+
