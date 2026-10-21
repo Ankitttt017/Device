@@ -21,6 +21,7 @@ from quad_gateway.drivers.slmp.decoder import (
 )
 from quad_gateway.drivers.slmp.slmp_driver import SLMPDriver
 from quad_gateway.models.telemetry import AcquisitionEvent, TelemetryDataPoint
+from quad_gateway.processing.calculations import ShotCalculator
 
 logger = logging.getLogger("quad_gateway.collector")
 
@@ -86,6 +87,7 @@ class AcquisitionCollector:
         self.driver = driver
         self.word_batches = plan_word_batches(config.registers)
         self.bit_registers = [r for r in config.registers if r.data_type == "bit"]
+        self.calculator = ShotCalculator(config)
         logger.info(
             f"Acquisition planned: {len(self.word_batches)} contiguous word batches, "
             f"{len(self.bit_registers)} bit registers."
@@ -191,13 +193,15 @@ class AcquisitionCollector:
                     )
                 )
 
-        return AcquisitionEvent(
+        event = AcquisitionEvent(
             gateway_id=self.config.gateway_id,
             machine_id=self.config.machine_id,
             points=points,
             quality=cycle_quality,
             trigger=trigger_type
         )
+        # 3. Apply production-report calculations (shot result, derived values, limit status)
+        return self.calculator.apply(event)
 
     def _decode_register(self, reg: RegisterConfig, raw_bytes: bytes) -> TelemetryDataPoint:
         """

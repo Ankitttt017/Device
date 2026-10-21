@@ -179,7 +179,7 @@ class TestReadOnlySafety(unittest.TestCase):
 
 class TestEndToEndMockAcquisition(unittest.TestCase):
     """
-    End-to-end integration test acquiring all 60 registers from MockSLMPServer.
+    End-to-end integration test acquiring all 114 registers from MockSLMPServer.
     """
 
     @classmethod
@@ -210,7 +210,8 @@ class TestEndToEndMockAcquisition(unittest.TestCase):
         try:
             event = collector.collect_cycle()
             self.assertEqual(event.quality, "GOOD")
-            self.assertEqual(len(event.points), len(config.registers))
+            register_points = [p for p in event.points if p.address != "CALC"]
+            self.assertEqual(len(register_points), len(config.registers))
 
             # Validate specific known registers
             points_by_tag = {p.tag: p for p in event.points}

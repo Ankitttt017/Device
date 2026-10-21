@@ -62,7 +62,7 @@ class TestPLCValidation(unittest.TestCase):
 
     def test_mock_validation_all_registers(self):
         """
-        Verifies running validation with all_registers=True covers all 60 registers.
+        Verifies running validation with all_registers=True covers all 114 registers.
         """
         success, summary = run_plc_validation(
             config_path=self.config_path,
@@ -71,7 +71,7 @@ class TestPLCValidation(unittest.TestCase):
         )
         self.assertTrue(success)
         self.assertIsNotNone(summary)
-        self.assertEqual(summary["points_count"], 60)
+        self.assertEqual(summary["points_count"], 114)
         self.assertEqual(summary["quality"], "GOOD")
 
     def test_unreachable_plc_fails_safely(self):

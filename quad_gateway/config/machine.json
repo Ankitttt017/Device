@@ -10,7 +10,7 @@
   "connection": {
     "protocol": "SLMP_3E_BINARY",
     "host": "192.168.117.201",
-    "port": 1026,
+    "port": 5005,
     "read_only": true,
     "timeout_seconds": 5.0,
     "monitoring_timer_250ms": 16
@@ -45,6 +45,65 @@
     "default_byte_order": "little",
     "encoding": "ascii",
     "strip_null": true
+  },
+  "calculations": {
+    "enabled": true,
+    "shot_result": {
+      "tag": "SHOT_RESULT",
+      "source": "SHOT_STATUS",
+      "map": {
+        "1": "OK",
+        "3": "WARM_UP",
+        "5": "NG"
+      }
+    },
+    "derived": [
+      {
+        "tag": "CLAMP_TONNAGE_HE_LOW_MN_CALC",
+        "source": "CLAMP_TONNAGE_HE_LOW",
+        "factor": 0.085,
+        "decimals": 2,
+        "rounding": "half_up",
+        "unit": "MN",
+        "with_limits": true
+      },
+      {
+        "tag": "CLAMP_TONNAGE_HE_UP_MN_CALC",
+        "source": "CLAMP_TONNAGE_HE_UP",
+        "factor": 0.085,
+        "decimals": 2,
+        "rounding": "half_up",
+        "unit": "MN",
+        "with_limits": true
+      },
+      {
+        "tag": "CLAMP_TONNAGE_OP_LOW_MN_CALC",
+        "source": "CLAMP_TONNAGE_OP_LOW",
+        "factor": 0.085,
+        "decimals": 2,
+        "rounding": "half_up",
+        "unit": "MN",
+        "with_limits": true
+      },
+      {
+        "tag": "CLAMP_TONNAGE_OP_UP_MN_CALC",
+        "source": "CLAMP_TONNAGE_OP_UP",
+        "factor": 0.085,
+        "decimals": 2,
+        "rounding": "half_up",
+        "unit": "MN",
+        "with_limits": true
+      },
+      {
+        "tag": "CLAMP_TONNAGE_T_CALC",
+        "source": "CLAMP_FORCE_PCT",
+        "factor": 8.5,
+        "decimals": 0,
+        "rounding": "down",
+        "unit": "T"
+      }
+    ],
+    "limit_status": true
   },
   "registers": [
     {
@@ -166,97 +225,289 @@
       "tag": "DIE_CLOSE_CORE_IN_TIME",
       "address": "D1128",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "DIE-CLOSE CORE IN TIME"
+    },
+    {
+      "tag": "DIE_CLOSE_CORE_IN_TIME_UPPER",
+      "address": "D4319",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "DIE-CLOSE CORE IN TIME - Upper Limit"
+    },
+    {
+      "tag": "DIE_CLOSE_CORE_IN_TIME_LOWER",
+      "address": "D4269",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "DIE-CLOSE CORE IN TIME - Lower Limit"
     },
     {
       "tag": "POURING_TIME",
       "address": "D1129",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "POURING TIME"
+    },
+    {
+      "tag": "POURING_TIME_UPPER",
+      "address": "D4320",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "POURING TIME - Upper Limit"
+    },
+    {
+      "tag": "POURING_TIME_LOWER",
+      "address": "D4270",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "POURING TIME - Lower Limit"
     },
     {
       "tag": "SHOT_FWD_TIME",
       "address": "D1130",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "SHOT FWD TIME"
+    },
+    {
+      "tag": "SHOT_FWD_TIME_UPPER",
+      "address": "D4321",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "SHOT FWD TIME - Upper Limit"
+    },
+    {
+      "tag": "SHOT_FWD_TIME_LOWER",
+      "address": "D4271",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "SHOT FWD TIME - Lower Limit"
     },
     {
       "tag": "DIE_OPEN_CORE_OUT_TIME",
       "address": "D1132",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "DIE OPEN CORE OUT TIME"
+    },
+    {
+      "tag": "DIE_OPEN_CORE_OUT_TIME_UPPER",
+      "address": "D4323",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "DIE OPEN CORE OUT TIME - Upper Limit"
+    },
+    {
+      "tag": "DIE_OPEN_CORE_OUT_TIME_LOWER",
+      "address": "D4273",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "DIE OPEN CORE OUT TIME - Lower Limit"
     },
     {
       "tag": "EJECTOR_TIME",
       "address": "D1133",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "EJECTOR TIME"
+    },
+    {
+      "tag": "EJECTOR_TIME_UPPER",
+      "address": "D4324",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "EJECTOR TIME - Upper Limit"
+    },
+    {
+      "tag": "EJECTOR_TIME_LOWER",
+      "address": "D4274",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "EJECTOR TIME - Lower Limit"
     },
     {
       "tag": "EXTRACT_TIME",
       "address": "D1134",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "EXTRACT TIME"
+    },
+    {
+      "tag": "EXTRACT_TIME_UPPER",
+      "address": "D4325",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "EXTRACT TIME - Upper Limit"
+    },
+    {
+      "tag": "EXTRACT_TIME_LOWER",
+      "address": "D4275",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "EXTRACT TIME - Lower Limit"
     },
     {
       "tag": "SPRAY_TIME",
       "address": "D1135",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "SPRAY TIME"
+    },
+    {
+      "tag": "SPRAY_TIME_UPPER",
+      "address": "D4326",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "SPRAY TIME - Upper Limit"
+    },
+    {
+      "tag": "SPRAY_TIME_LOWER",
+      "address": "D4276",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "SPRAY TIME - Lower Limit"
     },
     {
       "tag": "CURING_TIME",
       "address": "D1137",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "CURING TIME"
+    },
+    {
+      "tag": "CURING_TIME_UPPER",
+      "address": "D4322",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "CURING TIME - Upper Limit"
+    },
+    {
+      "tag": "CURING_TIME_LOWER",
+      "address": "D4272",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "sec",
+      "description": "CURING TIME - Lower Limit"
     },
     {
       "tag": "V1",
       "address": "D6900",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.01,
       "unit": "m/sec",
       "description": "V1"
+    },
+    {
+      "tag": "V1_UPPER",
+      "address": "D4300",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "m/sec",
+      "description": "V1 - Upper Limit"
+    },
+    {
+      "tag": "V1_LOWER",
+      "address": "D4250",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "m/sec",
+      "description": "V1 - Lower Limit"
     },
     {
       "tag": "V2",
       "address": "D6902",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.01,
       "unit": "m/sec",
       "description": "V2"
+    },
+    {
+      "tag": "V2_UPPER",
+      "address": "D4301",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "m/sec",
+      "description": "V2 - Upper Limit"
+    },
+    {
+      "tag": "V2_LOWER",
+      "address": "D4251",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "m/sec",
+      "description": "V2 - Lower Limit"
     },
     {
       "tag": "V3",
       "address": "D6904",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.01,
       "unit": "m/sec",
       "description": "V3"
+    },
+    {
+      "tag": "V3_UPPER",
+      "address": "D4302",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "m/sec",
+      "description": "V3 - Upper Limit"
+    },
+    {
+      "tag": "V3_LOWER",
+      "address": "D4252",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "m/sec",
+      "description": "V3 - Lower Limit"
     },
     {
       "tag": "V4",
       "address": "D6906",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.01,
       "unit": "m/sec",
       "description": "V4"
+    },
+    {
+      "tag": "V4_UPPER",
+      "address": "D4303",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "m/sec",
+      "description": "V4 - Upper Limit"
+    },
+    {
+      "tag": "V4_LOWER",
+      "address": "D4253",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "m/sec",
+      "description": "V4 - Lower Limit"
     },
     {
       "tag": "ACCEL_POINT",
@@ -267,6 +518,22 @@
       "description": "ACCEL. POINT"
     },
     {
+      "tag": "ACCEL_POINT_UPPER",
+      "address": "D4304",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "ACCEL. POINT - Upper Limit"
+    },
+    {
+      "tag": "ACCEL_POINT_LOWER",
+      "address": "D4254",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "ACCEL. POINT - Lower Limit"
+    },
+    {
       "tag": "DEACEL_POINT",
       "address": "D6910",
       "data_type": "decimal_scaled",
@@ -275,12 +542,44 @@
       "description": "DEACEL. POINT"
     },
     {
+      "tag": "DEACEL_POINT_UPPER",
+      "address": "D4305",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "DEACEL. POINT - Upper Limit"
+    },
+    {
+      "tag": "DEACEL_POINT_LOWER",
+      "address": "D4255",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "DEACEL. POINT - Lower Limit"
+    },
+    {
       "tag": "METAL_PRESS",
       "address": "D6912",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "MPa",
       "description": "METAL PRESS."
+    },
+    {
+      "tag": "METAL_PRESS_UPPER",
+      "address": "D4306",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "MPa",
+      "description": "METAL PRESS. - Upper Limit"
+    },
+    {
+      "tag": "METAL_PRESS_LOWER",
+      "address": "D4256",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "MPa",
+      "description": "METAL PRESS. - Lower Limit"
     },
     {
       "tag": "INTEN_TIME",
@@ -291,12 +590,44 @@
       "description": "INTEN. TIME"
     },
     {
+      "tag": "INTEN_TIME_UPPER",
+      "address": "D4307",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "msec",
+      "description": "INTEN. TIME - Upper Limit"
+    },
+    {
+      "tag": "INTEN_TIME_LOWER",
+      "address": "D4257",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "msec",
+      "description": "INTEN. TIME - Lower Limit"
+    },
+    {
       "tag": "BISCUIT_THICKNESS",
       "address": "D6916",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mm",
       "description": "BISCUIT THICKNESS"
+    },
+    {
+      "tag": "BISCUIT_THICKNESS_UPPER",
+      "address": "D4308",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "BISCUIT THICKNESS - Upper Limit"
+    },
+    {
+      "tag": "BISCUIT_THICKNESS_LOWER",
+      "address": "D4258",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mm",
+      "description": "BISCUIT THICKNESS - Lower Limit"
     },
     {
       "tag": "CLAMP_TONNAGE_HE_LOW",
@@ -307,12 +638,44 @@
       "description": "CLAMP TONNAGE(HE.LOW)"
     },
     {
+      "tag": "CLAMP_TONNAGE_HE_LOW_UPPER",
+      "address": "D4309",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(HE.LOW) - Upper Limit"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_HE_LOW_LOWER",
+      "address": "D4259",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(HE.LOW) - Lower Limit"
+    },
+    {
       "tag": "CLAMP_TONNAGE_HE_LOW_MN",
       "address": "D6920",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "MN",
       "description": "CLAMP TONNAGE(HE.LOW) MN"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_HE_LOW_MN_UPPER",
+      "address": "D4310",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "MN",
+      "description": "CLAMP TONNAGE(HE.LOW) MN - Upper Limit"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_HE_LOW_MN_LOWER",
+      "address": "D4260",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.01,
+      "unit": "MN",
+      "description": "CLAMP TONNAGE(HE.LOW) MN - Lower Limit"
     },
     {
       "tag": "CLAMP_TONNAGE_OP_UP",
@@ -323,12 +686,44 @@
       "description": "CLAMP TONNAGE(OP.UP)"
     },
     {
+      "tag": "CLAMP_TONNAGE_OP_UP_UPPER",
+      "address": "D4311",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(OP.UP) - Upper Limit"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_OP_UP_LOWER",
+      "address": "D4261",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(OP.UP) - Lower Limit"
+    },
+    {
       "tag": "CLAMP_TONNAGE_OP_LOW",
       "address": "D6924",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
       "description": "CLAMP TONNAGE(OP.LOW)"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_OP_LOW_UPPER",
+      "address": "D4312",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(OP.LOW) - Upper Limit"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_OP_LOW_LOWER",
+      "address": "D4262",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(OP.LOW) - Lower Limit"
     },
     {
       "tag": "CLAMP_TONNAGE_HE_UP",
@@ -339,6 +734,22 @@
       "description": "CLAMP TONNAGE(HE.UP)"
     },
     {
+      "tag": "CLAMP_TONNAGE_HE_UP_UPPER",
+      "address": "D4313",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(HE.UP) - Upper Limit"
+    },
+    {
+      "tag": "CLAMP_TONNAGE_HE_UP_LOWER",
+      "address": "D4263",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "%",
+      "description": "CLAMP TONNAGE(HE.UP) - Lower Limit"
+    },
+    {
       "tag": "VACUUM_PRESSURE_D6928",
       "address": "D6928",
       "data_type": "decimal_scaled",
@@ -347,20 +758,68 @@
       "description": "VACUUM PRESSURE"
     },
     {
+      "tag": "VACUUM_PRESSURE_D6928_UPPER",
+      "address": "D4314",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mbar",
+      "description": "VACUUM PRESSURE - Upper Limit"
+    },
+    {
+      "tag": "VACUUM_PRESSURE_D6928_LOWER",
+      "address": "D4264",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "mbar",
+      "description": "VACUUM PRESSURE - Lower Limit"
+    },
+    {
       "tag": "COOLING_WATER_FLOW_MOV",
       "address": "D6930",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "L/min",
       "description": "COOLING WATER FLOW RATE (MOV.)"
+    },
+    {
+      "tag": "COOLING_WATER_FLOW_MOV_UPPER",
+      "address": "D4315",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "L/min",
+      "description": "COOLING WATER FLOW RATE (MOV.) - Upper Limit"
+    },
+    {
+      "tag": "COOLING_WATER_FLOW_MOV_LOWER",
+      "address": "D4265",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "L/min",
+      "description": "COOLING WATER FLOW RATE (MOV.) - Lower Limit"
     },
     {
       "tag": "COOLING_WATER_FLOW_STA",
       "address": "D6932",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "L/min",
       "description": "COOLING WATER FLOW RATE (STA.)"
+    },
+    {
+      "tag": "COOLING_WATER_FLOW_STA_UPPER",
+      "address": "D4316",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "L/min",
+      "description": "COOLING WATER FLOW RATE (STA.) - Upper Limit"
+    },
+    {
+      "tag": "COOLING_WATER_FLOW_STA_LOWER",
+      "address": "D4266",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "L/min",
+      "description": "COOLING WATER FLOW RATE (STA.) - Lower Limit"
     },
     {
       "tag": "FURNACE_METAL_TEMP",
@@ -369,6 +828,22 @@
       "scale_factor": null,
       "unit": "C",
       "description": "FURNACE METAL TEMP."
+    },
+    {
+      "tag": "FURNACE_METAL_TEMP_UPPER",
+      "address": "D4317",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "C",
+      "description": "FURNACE METAL TEMP. - Upper Limit"
+    },
+    {
+      "tag": "FURNACE_METAL_TEMP_LOWER",
+      "address": "D4267",
+      "data_type": "decimal_scaled",
+      "scale_factor": null,
+      "unit": "C",
+      "description": "FURNACE METAL TEMP. - Lower Limit"
     },
     {
       "tag": "CLAMP_FORCE_PCT",
@@ -406,9 +881,25 @@
       "tag": "JET_COOLING_PRESSURE",
       "address": "D6954",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "kgf/cm2",
       "description": "JET COOLING PRESSURE"
+    },
+    {
+      "tag": "JET_COOLING_PRESSURE_UPPER",
+      "address": "D4327",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "kgf/cm2",
+      "description": "JET COOLING PRESSURE - Upper Limit"
+    },
+    {
+      "tag": "JET_COOLING_PRESSURE_LOWER",
+      "address": "D4277",
+      "data_type": "decimal_scaled",
+      "scale_factor": 0.1,
+      "unit": "kgf/cm2",
+      "description": "JET COOLING PRESSURE - Lower Limit"
     },
     {
       "tag": "FIXED_DIE_TEMP_F1",

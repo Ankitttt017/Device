@@ -18,36 +18,48 @@ The **QUAD Gateway** is an industrial edge data acquisition system designed to r
 
 ```text
 Device/
-├── quad_gateway/
-│   ├── main.py                    # Gateway runtime entry point (Phase 1 & 2)
-│   ├── validate_plc.py            # Real PLC connectivity & initial register validation
+├── quad_gateway/                  # Application package
+│   ├── __main__.py                # `python -m quad_gateway` entry point
+│   ├── main.py                    # Gateway runtime (cycle-triggered / continuous / single-shot)
+│   ├── validate_plc.py            # Real PLC connectivity & register validation
 │   ├── config/
 │   │   ├── config_loader.py       # Configuration parser & validator
-│   │   └── machine.json           # Machine, storage & register definitions
+│   │   └── machine.json           # Machine, connection, MQTT & register definitions
 │   ├── drivers/
 │   │   └── slmp/
 │   │       ├── slmp_protocol.py   # SLMP 3E Binary framing & parsing (Read-Only)
 │   │       ├── slmp_driver.py     # Socket management & read operations
 │   │       └── decoder.py         # Word, Bit, String & Scaled decoders
 │   ├── acquisition/
-│   │   └── collector.py           # Acquisition cycle & batch planning
+│   │   └── collector.py           # Acquisition cycle & contiguous batch planning
 │   ├── models/
 │   │   └── telemetry.py           # Normalized telemetry data structures
-│   ├── storage/                   # [Phase 2] SQLite persistent store & sync queue
+│   ├── processing/
+│   │   └── calculations.py        # Report calculations: shot result, clamp MN/T, limit status
+│   ├── storage/
 │   │   ├── database.py            # SQLite StorageManager & transactions
-│   │   └── schema.sql             # machines, tags, events, sync_queue schema
-│   ├── mqtt/                      # [Phase 3 Reserved] MQTT publisher
-│   ├── sync/                      # [Phase 5 Reserved] Backlog synchronization
+│   │   └── schema.sql             # machines, machine_tags, acquisition_events, sync_queue
+│   ├── mqtt/
+│   │   └── publisher.py           # Persistent MQTT publisher (paho-mqtt) + in-memory fake
+│   ├── sync/
+│   │   └── sync_manager.py        # SQLite -> MQTT backlog drain with retry backoff
 │   └── utils/
-│       └── logger.py              # Industrial logging
+│       └── logger.py              # Console + rotating file logging
 ├── tests/
 │   ├── mock_plc.py                # In-memory Mock Mitsubishi SLMP 3E Server
 │   ├── test_slmp.py               # Protocol, driver, decoder & E2E tests
 │   ├── test_config.py             # Configuration & batch planner tests
 │   ├── test_validation.py         # Real/Mock PLC register validation tests
-│   ├── test_storage.py            # [Phase 2] SQLite storage, schema, transaction tests
-│   ├── test_mqtt.py               # [Phase 3 Reserved]
-│   └── test_sync.py               # [Phase 5 Reserved]
+│   ├── test_trigger.py            # M4598 cycle-end trigger detection tests
+│   ├── test_storage.py            # SQLite storage, schema & transaction tests
+│   ├── test_mqtt.py               # MQTT publisher & sync manager tests
+│   ├── test_calculations.py       # Report calculation rules (verified against real report)
+│   └── test_sync.py               # Reserved: main-server ACK synchronization
+├── scripts/
+│   ├── install_service.sh         # Raspberry Pi systemd service installer
+│   └── quad_gateway.service       # Reference systemd unit file
+├── data/                          # (runtime, git-ignored) SQLite database
+├── logs/                          # (runtime, git-ignored) gateway.log
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -77,7 +89,7 @@ Run the comprehensive unit and integration test suite:
 ## 5. Real PLC Validation & Gateway Execution
 
 ### A. Real Mitsubishi PLC Validation:
-Validates network connectivity and the Phase 1 priority register set against the physical machine PLC (`192.168.117.201:1027`):
+Validates network connectivity and the Phase 1 priority register set against the physical machine PLC (`192.168.117.201:5005`):
 ```powershell
 python -m quad_gateway.validate_plc
 ```

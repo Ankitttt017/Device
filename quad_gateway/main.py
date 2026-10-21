@@ -307,16 +307,18 @@ def run_gateway(
                         total_shots = next((p.value for p in event.points if p.tag == "HIGH_SHOT_COUNT"), "N/A")
                         furnace_temp = next((p.value for p in event.points if p.tag == "FURNACE_METAL_TEMP"), "N/A")
                         pouring_val = next((p.value for p in event.points if p.tag == "POURING_TIME"), "N/A")
+                        shot_result = next((p.value for p in event.points if p.tag == "SHOT_RESULT"), "N/A")
 
                         # Cycle End DateTime (Local IST time, strictly matching Ricosys cycletime EndDateTime)
                         cycle_end_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                         # Format scaled process times for display
                         cycle_sec_str = f"{cycle_time / 10.0:.1f}s" if isinstance(cycle_time, (int, float)) and cycle_time > 100 else f"{cycle_time}s"
-                        pouring_str = f"{pouring_val / 10.0:.2f}s" if isinstance(pouring_val, (int, float)) and pouring_val > 10 else f"{pouring_val}s"
+                        pouring_str = f"{pouring_val}s"  # already scaled via scale_factor in machine.json
 
                         logger.info(
                             f"✅ [SHOT COMPLETE] Counter: {shot_no} | "
+                            f"Result: {shot_result} | "
                             f"Cycle End DateTime: {cycle_end_str} | "
                             f"Cycle Time: {cycle_sec_str} | "
                             f"Pouring: {pouring_str} | "

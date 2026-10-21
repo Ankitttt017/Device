@@ -342,7 +342,7 @@ class TestMQTTAndSyncManager(unittest.TestCase):
                 # 1. Acquire from Mock PLC
                 event = collector.collect_cycle()
                 self.assertEqual(event.quality, "GOOD")
-                self.assertEqual(len(event.points), 60)
+                self.assertEqual(len(event.points), 160)
 
                 # 2. Persist to SQLite
                 self.storage.sync_machine_config(config)
@@ -365,7 +365,7 @@ class TestMQTTAndSyncManager(unittest.TestCase):
                 payload = pub_msg["payload_dict"]
                 self.assertEqual(payload["event_uuid"], event.event_id)
                 self.assertEqual(payload["machine_id"], "UBE-850T-02")
-                self.assertEqual(len(payload["payload"]), 60)
+                self.assertEqual(len(payload["payload"]), 160)
                 self.assertEqual(payload["payload"]["CYCLE_TIME"]["value"], 385)
                 self.assertEqual(payload["payload"]["PART_NAME"]["value"], "PART-UBE-850T02")
                 self.assertEqual(payload["payload"]["SHOT_NO"]["value"], 1042)

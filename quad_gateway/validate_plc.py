@@ -166,7 +166,8 @@ def run_plc_validation(
             )
 
     registers_by_tag = {r.tag: r for r in selected_registers}
-    sub_config = dataclasses.replace(config, registers=selected_registers)
+    # Validation checks raw register reads only; report calculations are not applied here
+    sub_config = dataclasses.replace(config, registers=selected_registers, calculations={})
 
     # 2. Initialize SLMP Driver (read_only=True strictly enforced)
     driver = SLMPDriver(
@@ -283,7 +284,7 @@ def main():
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Validate all 60 configured registers instead of priority subset",
+        help="Validate all configured registers instead of priority subset",
     )
     parser.add_argument(
         "--host", default=None, help="Override PLC host IP (e.g. for testing)"

@@ -66,6 +66,7 @@ class MachineConfig:
     acquisition_mode: str = "cycle_triggered"
     trigger_bit: str = "M4598"
     trigger_poll_ms: int = 50
+    calculations: Dict[str, Any] = field(default_factory=dict)
 
 
 def parse_device_address(address_str: str) -> Tuple[str, int]:
@@ -243,4 +244,5 @@ def load_machine_config(config_path: str) -> MachineConfig:
         acquisition_mode=acq_mode,
         trigger_bit=trigger_bit,
         trigger_poll_ms=trigger_poll_ms,
+        calculations=data.get("calculations", {}),
     )
