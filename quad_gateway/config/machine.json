@@ -96,7 +96,7 @@
       },
       {
         "tag": "CLAMP_TONNAGE_T_CALC",
-        "source": "CLAMP_FORCE_PCT",
+        "source": "CLAMP_TONNAGE_HE_LOW",
         "factor": 8.5,
         "decimals": 0,
         "rounding": "down",
@@ -231,7 +231,7 @@
     },
     {
       "tag": "DIE_CLOSE_CORE_IN_TIME_UPPER",
-      "address": "D4319",
+      "address": "D4269",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -239,7 +239,7 @@
     },
     {
       "tag": "DIE_CLOSE_CORE_IN_TIME_LOWER",
-      "address": "D4269",
+      "address": "D4319",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -255,7 +255,7 @@
     },
     {
       "tag": "POURING_TIME_UPPER",
-      "address": "D4320",
+      "address": "D4270",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -263,7 +263,7 @@
     },
     {
       "tag": "POURING_TIME_LOWER",
-      "address": "D4270",
+      "address": "D4320",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -279,7 +279,7 @@
     },
     {
       "tag": "SHOT_FWD_TIME_UPPER",
-      "address": "D4321",
+      "address": "D4271",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -287,7 +287,7 @@
     },
     {
       "tag": "SHOT_FWD_TIME_LOWER",
-      "address": "D4271",
+      "address": "D4321",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -303,7 +303,7 @@
     },
     {
       "tag": "DIE_OPEN_CORE_OUT_TIME_UPPER",
-      "address": "D4323",
+      "address": "D4273",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -311,7 +311,7 @@
     },
     {
       "tag": "DIE_OPEN_CORE_OUT_TIME_LOWER",
-      "address": "D4273",
+      "address": "D4323",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -327,7 +327,7 @@
     },
     {
       "tag": "EJECTOR_TIME_UPPER",
-      "address": "D4324",
+      "address": "D4274",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -335,7 +335,7 @@
     },
     {
       "tag": "EJECTOR_TIME_LOWER",
-      "address": "D4274",
+      "address": "D4324",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -351,7 +351,7 @@
     },
     {
       "tag": "EXTRACT_TIME_UPPER",
-      "address": "D4325",
+      "address": "D4275",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -359,7 +359,7 @@
     },
     {
       "tag": "EXTRACT_TIME_LOWER",
-      "address": "D4275",
+      "address": "D4325",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -375,7 +375,7 @@
     },
     {
       "tag": "SPRAY_TIME_UPPER",
-      "address": "D4326",
+      "address": "D4276",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -383,7 +383,7 @@
     },
     {
       "tag": "SPRAY_TIME_LOWER",
-      "address": "D4276",
+      "address": "D4326",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -399,7 +399,7 @@
     },
     {
       "tag": "CURING_TIME_UPPER",
-      "address": "D4322",
+      "address": "D4272",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -407,7 +407,7 @@
     },
     {
       "tag": "CURING_TIME_LOWER",
-      "address": "D4272",
+      "address": "D4322",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "sec",
@@ -423,7 +423,7 @@
     },
     {
       "tag": "V1_UPPER",
-      "address": "D4300",
+      "address": "D4250",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "m/sec",
@@ -431,7 +431,7 @@
     },
     {
       "tag": "V1_LOWER",
-      "address": "D4250",
+      "address": "D4300",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "m/sec",
@@ -447,7 +447,7 @@
     },
     {
       "tag": "V2_UPPER",
-      "address": "D4301",
+      "address": "D4251",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "m/sec",
@@ -455,7 +455,7 @@
     },
     {
       "tag": "V2_LOWER",
-      "address": "D4251",
+      "address": "D4301",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "m/sec",
@@ -471,7 +471,7 @@
     },
     {
       "tag": "V3_UPPER",
-      "address": "D4302",
+      "address": "D4252",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "m/sec",
@@ -479,7 +479,7 @@
     },
     {
       "tag": "V3_LOWER",
-      "address": "D4252",
+      "address": "D4302",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "m/sec",
@@ -495,7 +495,7 @@
     },
     {
       "tag": "V4_UPPER",
-      "address": "D4303",
+      "address": "D4253",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "m/sec",
@@ -503,7 +503,7 @@
     },
     {
       "tag": "V4_LOWER",
-      "address": "D4253",
+      "address": "D4303",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "m/sec",
@@ -519,7 +519,7 @@
     },
     {
       "tag": "ACCEL_POINT_UPPER",
-      "address": "D4304",
+      "address": "D4254",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mm",
@@ -527,7 +527,7 @@
     },
     {
       "tag": "ACCEL_POINT_LOWER",
-      "address": "D4254",
+      "address": "D4304",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mm",
@@ -543,7 +543,7 @@
     },
     {
       "tag": "DEACEL_POINT_UPPER",
-      "address": "D4305",
+      "address": "D4255",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mm",
@@ -551,7 +551,7 @@
     },
     {
       "tag": "DEACEL_POINT_LOWER",
-      "address": "D4255",
+      "address": "D4305",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mm",
@@ -567,7 +567,7 @@
     },
     {
       "tag": "METAL_PRESS_UPPER",
-      "address": "D4306",
+      "address": "D4256",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "MPa",
@@ -575,7 +575,7 @@
     },
     {
       "tag": "METAL_PRESS_LOWER",
-      "address": "D4256",
+      "address": "D4306",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "MPa",
@@ -591,7 +591,7 @@
     },
     {
       "tag": "INTEN_TIME_UPPER",
-      "address": "D4307",
+      "address": "D4257",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "msec",
@@ -599,7 +599,7 @@
     },
     {
       "tag": "INTEN_TIME_LOWER",
-      "address": "D4257",
+      "address": "D4307",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "msec",
@@ -615,7 +615,7 @@
     },
     {
       "tag": "BISCUIT_THICKNESS_UPPER",
-      "address": "D4308",
+      "address": "D4258",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mm",
@@ -623,7 +623,7 @@
     },
     {
       "tag": "BISCUIT_THICKNESS_LOWER",
-      "address": "D4258",
+      "address": "D4308",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mm",
@@ -639,7 +639,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_HE_LOW_UPPER",
-      "address": "D4309",
+      "address": "D4259",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
@@ -647,7 +647,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_HE_LOW_LOWER",
-      "address": "D4259",
+      "address": "D4309",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
@@ -657,13 +657,13 @@
       "tag": "CLAMP_TONNAGE_HE_LOW_MN",
       "address": "D6920",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.01,
       "unit": "MN",
       "description": "CLAMP TONNAGE(HE.LOW) MN"
     },
     {
       "tag": "CLAMP_TONNAGE_HE_LOW_MN_UPPER",
-      "address": "D4310",
+      "address": "D4260",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "MN",
@@ -671,7 +671,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_HE_LOW_MN_LOWER",
-      "address": "D4260",
+      "address": "D4310",
       "data_type": "decimal_scaled",
       "scale_factor": 0.01,
       "unit": "MN",
@@ -687,7 +687,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_OP_UP_UPPER",
-      "address": "D4311",
+      "address": "D4261",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
@@ -695,7 +695,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_OP_UP_LOWER",
-      "address": "D4261",
+      "address": "D4311",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
@@ -711,7 +711,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_OP_LOW_UPPER",
-      "address": "D4312",
+      "address": "D4262",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
@@ -719,7 +719,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_OP_LOW_LOWER",
-      "address": "D4262",
+      "address": "D4312",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
@@ -735,7 +735,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_HE_UP_UPPER",
-      "address": "D4313",
+      "address": "D4263",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
@@ -743,7 +743,7 @@
     },
     {
       "tag": "CLAMP_TONNAGE_HE_UP_LOWER",
-      "address": "D4263",
+      "address": "D4313",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "%",
@@ -759,7 +759,7 @@
     },
     {
       "tag": "VACUUM_PRESSURE_D6928_UPPER",
-      "address": "D4314",
+      "address": "D4264",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mbar",
@@ -767,7 +767,7 @@
     },
     {
       "tag": "VACUUM_PRESSURE_D6928_LOWER",
-      "address": "D4264",
+      "address": "D4314",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "mbar",
@@ -783,7 +783,7 @@
     },
     {
       "tag": "COOLING_WATER_FLOW_MOV_UPPER",
-      "address": "D4315",
+      "address": "D4265",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "L/min",
@@ -791,7 +791,7 @@
     },
     {
       "tag": "COOLING_WATER_FLOW_MOV_LOWER",
-      "address": "D4265",
+      "address": "D4315",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "L/min",
@@ -807,7 +807,7 @@
     },
     {
       "tag": "COOLING_WATER_FLOW_STA_UPPER",
-      "address": "D4316",
+      "address": "D4266",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "L/min",
@@ -815,7 +815,7 @@
     },
     {
       "tag": "COOLING_WATER_FLOW_STA_LOWER",
-      "address": "D4266",
+      "address": "D4316",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "L/min",
@@ -831,7 +831,7 @@
     },
     {
       "tag": "FURNACE_METAL_TEMP_UPPER",
-      "address": "D4317",
+      "address": "D4267",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "C",
@@ -839,7 +839,7 @@
     },
     {
       "tag": "FURNACE_METAL_TEMP_LOWER",
-      "address": "D4267",
+      "address": "D4317",
       "data_type": "decimal_scaled",
       "scale_factor": null,
       "unit": "C",
@@ -887,7 +887,7 @@
     },
     {
       "tag": "JET_COOLING_PRESSURE_UPPER",
-      "address": "D4327",
+      "address": "D4277",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "kgf/cm2",
@@ -895,7 +895,7 @@
     },
     {
       "tag": "JET_COOLING_PRESSURE_LOWER",
-      "address": "D4277",
+      "address": "D4327",
       "data_type": "decimal_scaled",
       "scale_factor": 0.1,
       "unit": "kgf/cm2",
