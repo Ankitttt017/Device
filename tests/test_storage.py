@@ -102,6 +102,27 @@ class TestStorageManager(unittest.TestCase):
         m2 = self.storage.get_machine("UBE-850T-02")
         self.assertEqual(m2["machine_name"], "UBE 850 T - 02 (Updated)")
 
+    def test_4b_sync_config_with_swapped_addresses(self):
+        """4b. Restart with two tags swapping addresses (UPPER/LOWER fix) must not violate UNIQUE(address)."""
+        import dataclasses
+        path = os.path.join(os.path.dirname(__file__), "..", "quad_gateway", "config", "machine.json")
+        config = load_machine_config(path)
+        regs = {r.tag: r for r in config.registers}
+        upper, lower = regs["V1_UPPER"], regs["V1_LOWER"]
+        swapped_regs = [
+            dataclasses.replace(r, address=lower.address) if r.tag == "V1_UPPER"
+            else dataclasses.replace(r, address=upper.address) if r.tag == "V1_LOWER"
+            else r
+            for r in config.registers
+        ]
+        self.storage.sync_machine_config(dataclasses.replace(config, registers=swapped_regs))
+        self.storage.sync_machine_config(config)
+
+        tags = {t["tag_name"]: t["address"] for t in self.storage.get_machine_tags("UBE-850T-02")}
+        self.assertEqual(tags["V1_UPPER"], upper.address)
+        self.assertEqual(tags["V1_LOWER"], lower.address)
+        self.assertEqual(len(tags), len(config.registers))
+
     def test_4_tags_insert_and_upsert(self):
         """4. Proves tags can be inserted/upserted, preserving NULL scale_factor for CYCLE_TIME."""
         self.storage.insert_machine(self.machine_data)

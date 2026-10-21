@@ -315,6 +315,19 @@ class StorageManager:
                     machine_info,
                 )
 
+                # Drop catalog rows whose tag/address pairing no longer matches the config
+                # (e.g. addresses swapped between two tags), so the upsert below cannot hit
+                # the UNIQUE(machine_id, address) constraint.
+                configured = {(reg.tag, reg.address) for reg in config.registers}
+                existing = conn.execute(
+                    "SELECT tag_name, address FROM machine_tags WHERE machine_id = ?",
+                    (config.machine_id,),
+                ).fetchall()
+                stale = [(config.machine_id, row[0]) for row in existing if (row[0], row[1]) not in configured]
+                if stale:
+                    conn.executemany("DELETE FROM machine_tags WHERE machine_id = ? AND tag_name = ?", stale)
+                    logger.info(f"Removed {len(stale)} outdated tag mapping(s) for Machine '{config.machine_id}'.")
+
                 # Upsert each tag
                 for reg in config.registers:
                     conn.execute(
