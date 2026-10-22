@@ -45,6 +45,9 @@ class MQTTConfig:
     retry_initial_delay: float = 2.0
     retry_max_delay: float = 60.0
     retry_backoff_factor: float = 2.0
+    ack_timeout_seconds: float = 300.0
+    sync_interval_seconds: float = 5.0
+    max_unacked: int = 200
 
 
 @dataclass
@@ -67,6 +70,7 @@ class MachineConfig:
     trigger_bit: str = "M4598"
     trigger_poll_ms: int = 50
     calculations: Dict[str, Any] = field(default_factory=dict)
+    retention_days: int = 30
 
 
 def parse_device_address(address_str: str) -> Tuple[str, int]:
@@ -207,14 +211,18 @@ def load_machine_config(config_path: str) -> MachineConfig:
 
     storage_sec = data.get("storage", {})
     database_path = storage_sec.get("database_path", "data/quad_gateway.db")
+    retention_days = int(storage_sec.get("retention_days", 30))
+    if retention_days < 1:
+        raise ConfigurationError("storage.retention_days must be >= 1.")
 
     mqtt_sec = data.get("mqtt", {})
     mqtt_config = MQTTConfig(
         enabled=bool(mqtt_sec.get("enabled", True)),
         host=str(os.environ.get("MQTT_BROKER_HOST") or mqtt_sec.get("host", "172.16.4.104")),
         port=int(os.environ.get("MQTT_BROKER_PORT") or mqtt_sec.get("port", 1883)),
-        username=mqtt_sec.get("username"),
-        password=mqtt_sec.get("password"),
+        # Credentials may come from the environment so they never have to be committed to git
+        username=os.environ.get("MQTT_USERNAME") or mqtt_sec.get("username"),
+        password=os.environ.get("MQTT_PASSWORD") or mqtt_sec.get("password"),
         client_id=str(mqtt_sec.get("client_id", gateway_sec.get("id", "QUAD-01"))),
         keepalive=int(mqtt_sec.get("keepalive", 60)),
         topic_prefix=str(mqtt_sec.get("topic_prefix", "quad")),
@@ -224,7 +232,12 @@ def load_machine_config(config_path: str) -> MachineConfig:
         retry_initial_delay=float(mqtt_sec.get("retry_initial_delay", 2.0)),
         retry_max_delay=float(mqtt_sec.get("retry_max_delay", 60.0)),
         retry_backoff_factor=float(mqtt_sec.get("retry_backoff_factor", 2.0)),
+        ack_timeout_seconds=float(mqtt_sec.get("ack_timeout_seconds", 300.0)),
+        sync_interval_seconds=float(mqtt_sec.get("sync_interval_seconds", 5.0)),
+        max_unacked=int(mqtt_sec.get("max_unacked", 200)),
     )
+    if mqtt_config.max_unacked < 1:
+        raise ConfigurationError("mqtt.max_unacked must be >= 1.")
 
     return MachineConfig(
         gateway_id=gateway_sec.get("id", "QUAD-01"),
@@ -245,4 +258,5 @@ def load_machine_config(config_path: str) -> MachineConfig:
         trigger_bit=trigger_bit,
         trigger_poll_ms=trigger_poll_ms,
         calculations=data.get("calculations", {}),
+        retention_days=retention_days,
     )

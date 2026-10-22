@@ -25,7 +25,7 @@ from quad_gateway.drivers.slmp.slmp_driver import (
 )
 from quad_gateway.mqtt.publisher import FakeMQTTPublisher, MQTTPublisher
 from quad_gateway.storage.database import StorageManager
-from quad_gateway.sync.sync_manager import SyncManager
+from quad_gateway.sync.sync_manager import SyncManager, build_status_topic
 from quad_gateway.utils.logger import setup_logger
 
 logger = setup_logger("quad_gateway", log_file="logs/gateway.log")
@@ -140,14 +140,55 @@ def run_gateway(
                 keepalive=config.mqtt.keepalive,
                 qos=config.mqtt.qos,
                 retain=config.mqtt.retain,
+                status_topic=build_status_topic(config.mqtt.topic_prefix, config.machine_id),
             )
-        mqtt_publisher.start()
         sync_manager = SyncManager(
             storage=storage,
             publisher=mqtt_publisher,
             mqtt_config=config.mqtt,
             machine_id=config.machine_id,
         )
+        mqtt_publisher.start()
+        logger.info(
+            f"Server ACKs expected on '{sync_manager.ack_topic}' "
+            f"(resend after {config.mqtt.ack_timeout_seconds:.0f}s without ACK, "
+            f"local retention {config.retention_days} days after ACK)."
+        )
+
+    last_sync = 0.0
+    last_purge = 0.0
+    last_wait_warning = 0.0
+
+    def run_sync(force: bool = False) -> None:
+        """
+        Publishes queued events, applies server ACKs, resends unACKed events and
+        purges old server-confirmed data. Runs every sync_interval_seconds.
+        """
+        nonlocal last_sync, last_purge, last_wait_warning
+        if not sync_manager:
+            return
+        now_ts = time.monotonic()
+        if not force and now_ts - last_sync < config.mqtt.sync_interval_seconds:
+            return
+        last_sync = now_ts
+        try:
+            res = sync_manager.run_cycle()
+            if res["published"] or res["acked"] or res["requeued"]:
+                logger.info(
+                    f"📡 [MQTT SYNC] published {res['published']} | server-confirmed {res['acked']} | "
+                    f"queued for resend {res['requeued']}"
+                )
+            if res["status"] == "WAITING_ACK" and now_ts - last_wait_warning >= 300:
+                last_wait_warning = now_ts
+                logger.warning(
+                    f"Publishing paused: {config.mqtt.max_unacked} event(s) still await a server ACK. "
+                    "Check that the server subscriber service is running. Data stays safe in SQLite."
+                )
+            if now_ts - last_purge >= 3600:
+                last_purge = now_ts
+                sync_manager.purge_synced(config.retention_days)
+        except Exception as e:
+            logger.warning(f"Non-fatal MQTT sync error: {e}")
 
     # 4. Instantiate SLMP Driver
     driver = SLMPDriver(
@@ -197,13 +238,7 @@ def run_gateway(
             logger.info(
                 f"Successfully persisted event {event.event_id} to SQLite ({db_path}) with status PENDING."
             )
-            if sync_manager:
-                try:
-                    sync_res = sync_manager.sync_pending_events()
-                    if sync_res["published"] > 0:
-                        logger.info(f"MQTT Sync: {sync_res['published']} event(s) published.")
-                except Exception as e:
-                    logger.warning(f"MQTT sync error: {e}")
+            run_sync(force=True)
             print(format_points_table(event.points, cycle_end_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
         elif force_continuous or config.acquisition_mode == "continuous":
@@ -224,15 +259,7 @@ def run_gateway(
                     logger.info(
                         f"Successfully persisted event {event.event_id} to SQLite ({db_path}) with status PENDING."
                     )
-                    if sync_manager:
-                        try:
-                            sync_res = sync_manager.sync_pending_events()
-                            if sync_res["published"] > 0:
-                                logger.info(
-                                    f"MQTT Sync: {sync_res['published']} event(s) published to broker."
-                                )
-                        except Exception as e:
-                            logger.warning(f"Non-fatal error in MQTT sync cycle: {e}")
+                    run_sync(force=True)
                     print(format_points_table(event.points, cycle_end_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
                 except Exception as e:
                     logger.error(f"Unexpected error during acquisition cycle: {e}")
@@ -274,6 +301,8 @@ def run_gateway(
 
             consecutive_errors = 0
             while not stop_requested:
+                # Background sync keeps the backlog moving even when the machine is idle or the PLC is down
+                run_sync()
                 try:
                     current_bit = collector.read_bit_value(trigger_bit)
                     consecutive_errors = 0
@@ -304,7 +333,6 @@ def run_gateway(
 
                         shot_no = next((p.value for p in event.points if p.tag == "SHOT_NO"), "N/A")
                         cycle_time = next((p.value for p in event.points if p.tag == "CYCLE_TIME"), "N/A")
-                        total_shots = next((p.value for p in event.points if p.tag == "HIGH_SHOT_COUNT"), "N/A")
                         furnace_temp = next((p.value for p in event.points if p.tag == "FURNACE_METAL_TEMP"), "N/A")
                         pouring_val = next((p.value for p in event.points if p.tag == "POURING_TIME"), "N/A")
                         shot_result = next((p.value for p in event.points if p.tag == "SHOT_RESULT"), "N/A")
@@ -313,7 +341,7 @@ def run_gateway(
                         cycle_end_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                         # Format scaled process times for display
-                        cycle_sec_str = f"{cycle_time / 10.0:.1f}s" if isinstance(cycle_time, (int, float)) and cycle_time > 100 else f"{cycle_time}s"
+                        cycle_sec_str = f"{cycle_time}s"  # already scaled via scale_factor in machine.json
                         pouring_str = f"{pouring_val}s"  # already scaled via scale_factor in machine.json
 
                         logger.info(
@@ -333,24 +361,8 @@ def run_gateway(
                             f"persisted at {cycle_end_str} to SQLite ({db_path}) with status PENDING."
                         )
 
-                        # MQTT publishing (Drains pending queue including any offline backlog)
-                        if sync_manager:
-                            try:
-                                total_published = 0
-                                while True:
-                                    sync_res = sync_manager.sync_pending_events(batch_size=50)
-                                    if sync_res["published"] > 0:
-                                        total_published += sync_res["published"]
-                                        if sync_res["published"] < 50:
-                                            break
-                                    else:
-                                        break
-                                if total_published > 0:
-                                    logger.info(f"📡 [MQTT SYNC] {total_published} event(s) published to MQTT broker.")
-                                elif sync_res["status"] == "OFFLINE":
-                                    logger.debug("MQTT broker offline; shot safely queued in SQLite.")
-                            except Exception as me:
-                                logger.warning(f"MQTT sync warning: {me}")
+                        # MQTT publishing (one batch now; any backlog keeps draining in the background)
+                        run_sync(force=True)
 
                         banner = (
                             f"  QUAD GATEWAY SHOT REPORT | Counter: {shot_no} | "

@@ -179,7 +179,7 @@ class TestReadOnlySafety(unittest.TestCase):
 
 class TestEndToEndMockAcquisition(unittest.TestCase):
     """
-    End-to-end integration test acquiring all 114 registers from MockSLMPServer.
+    End-to-end integration test acquiring all 112 registers from MockSLMPServer.
     """
 
     @classmethod
@@ -234,10 +234,10 @@ class TestEndToEndMockAcquisition(unittest.TestCase):
             self.assertEqual(points_by_tag["SHOT_MONTH"].value, 9)
             self.assertEqual(points_by_tag["SHOT_DAY"].value, 8)
 
-            # 5. Cycle time (raw preserved)
+            # 5. Cycle time (raw preserved, value scaled x0.1)
             cycle_time = points_by_tag["CYCLE_TIME"]
             self.assertEqual(cycle_time.raw_value, 385)
-            self.assertEqual(cycle_time.value, 385)
+            self.assertEqual(cycle_time.value, 38.5)
             self.assertEqual(cycle_time.unit, "sec")
 
             # 6. Temperatures

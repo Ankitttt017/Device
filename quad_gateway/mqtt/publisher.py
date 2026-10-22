@@ -13,7 +13,10 @@ Guarantees:
 import json
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
+
+# Callback for incoming messages: (topic, payload_text) -> None
+MessageCallback = Callable[[str, str], None]
 
 logger = logging.getLogger("quad_gateway.mqtt")
 class MQTTPublisher:
@@ -32,6 +35,7 @@ class MQTTPublisher:
         keepalive: int = 60,
         qos: int = 1,
         retain: bool = False,
+        status_topic: Optional[str] = None,
     ):
         self.host = host
         self.port = port
@@ -41,14 +45,32 @@ class MQTTPublisher:
         self.keepalive = keepalive
         self.qos = qos
         self.retain = retain
+        # Retained online/offline status; the broker publishes "offline" itself (MQTT last will)
+        # if QUAD disappears without a clean disconnect (power cut, network loss).
+        self.status_topic = status_topic
 
         self._connected = False
         self._client: Optional[Any] = None
         self._loop_running = False
+        self._subscriptions: Dict[str, MessageCallback] = {}
 
     @property
     def is_connected(self) -> bool:
         return self._connected and self._client is not None
+
+    def _status_payload(self, status: str) -> str:
+        return json.dumps({"status": status, "gateway_id": self.client_id})
+
+    def subscribe(self, topic: str, callback: MessageCallback) -> None:
+        """
+        Registers a callback for an exact topic (e.g. the server ACK topic).
+        Subscriptions are re-applied automatically after every (re)connect.
+        Callbacks run on the paho network thread and must not block.
+        """
+        self._subscriptions[topic] = callback
+        if self.is_connected:
+            self._client.subscribe(topic, qos=self.qos)
+            logger.info(f"Subscribed to {topic} (QoS {self.qos}).")
 
     def start(self) -> bool:
         """
@@ -84,6 +106,10 @@ class MQTTPublisher:
             self._client.on_connect = self._on_connect
             self._client.on_disconnect = self._on_disconnect
             self._client.on_publish = self._on_publish
+            self._client.on_message = self._on_message
+
+            if self.status_topic:
+                self._client.will_set(self.status_topic, self._status_payload("offline"), qos=1, retain=True)
 
             logger.info(f"Connecting to MQTT broker at {self.host}:{self.port} (Client ID: {self.client_id}, Keepalive: {self.keepalive}s)...")
             # Connect async to avoid blocking acquisition if broker is temporarily down
@@ -107,6 +133,9 @@ class MQTTPublisher:
         logger.info("Stopping MQTT publisher...")
         if self._client:
             try:
+                if self.status_topic and self.is_connected:
+                    info = self._client.publish(self.status_topic, self._status_payload("offline"), qos=1, retain=True)
+                    info.wait_for_publish(timeout=2.0)
                 if self._loop_running:
                     self._client.loop_stop()
                     self._loop_running = False
@@ -166,6 +195,12 @@ class MQTTPublisher:
         if is_success:
             self._connected = True
             logger.info(f"[MQTT CONNECTED] Successfully connected to broker at {self.host}:{self.port} (Client: {self.client_id}).")
+            # clean_session=True drops subscriptions on reconnect, so re-apply them
+            for topic in self._subscriptions:
+                client.subscribe(topic, qos=self.qos)
+                logger.info(f"Subscribed to {topic} (QoS {self.qos}).")
+            if self.status_topic:
+                client.publish(self.status_topic, self._status_payload("online"), qos=1, retain=True)
         else:
             self._connected = False
             logger.warning(f"[MQTT CONNECT REJECTED] Broker rejected connection: code={reason_code}.")
@@ -177,6 +212,16 @@ class MQTTPublisher:
 
     def _on_publish(self, client: Any, userdata: Any, mid: int, reason_code: Any = None, properties: Any = None) -> None:
         logger.debug(f"MQTT puback received for mid={mid}.")
+
+    def _on_message(self, client: Any, userdata: Any, msg: Any) -> None:
+        callback = self._subscriptions.get(msg.topic)
+        if callback is None:
+            logger.debug(f"Ignoring message on unsubscribed topic {msg.topic}.")
+            return
+        try:
+            callback(msg.topic, msg.payload.decode("utf-8", errors="replace"))
+        except Exception as e:
+            logger.warning(f"Error handling message on {msg.topic}: {e}")
 
 
 class FakeMQTTPublisher:
@@ -198,10 +243,20 @@ class FakeMQTTPublisher:
         self.offline_mode = False
         self.fail_publish = False
         self.published_messages: List[Dict[str, Any]] = []
+        self.subscriptions: Dict[str, MessageCallback] = {}
 
     @property
     def is_connected(self) -> bool:
         return self._is_connected and not self.offline_mode
+
+    def subscribe(self, topic: str, callback: MessageCallback) -> None:
+        self.subscriptions[topic] = callback
+
+    def deliver(self, topic: str, payload: str) -> None:
+        """Simulates the broker delivering a message (e.g. a server ACK) to a subscriber."""
+        callback = self.subscriptions.get(topic)
+        if callback:
+            callback(topic, payload)
 
     def start(self) -> bool:
         self._is_connected = not self.offline_mode

@@ -4,8 +4,6 @@ Phase 1: Validates network connectivity and initial register set against
 the physical Mitsubishi PLC (or Mock PLC for offline verification).
 
 Target Initial Validation Registers:
-- D947   HIGH_SHOT_COUNT   (int16)
-- D955   NG_COUNTER        (int16)
 - D1120  SHOT_NO           (int16)
 - D1127  CYCLE_TIME        (decimal_scaled, unit: sec) - ONLY CYCLE_TIME
 - D1301  SHOT_STATUS       (int16)
@@ -44,8 +42,6 @@ logger = setup_logger("quad_gateway.validate_plc", log_file="logs/gateway.log")
 
 # Phase 1 Target Initial Validation Registers
 TARGET_REGISTER_TAGS = [
-    "HIGH_SHOT_COUNT",
-    "NG_COUNTER",
     "SHOT_NO",
     "CYCLE_TIME",
     "SHOT_STATUS",

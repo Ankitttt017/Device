@@ -79,7 +79,7 @@ class TestCycleTriggeredAcquisition(unittest.TestCase):
 
         cycle_point = next((p for p in event.points if p.tag == "CYCLE_TIME"), None)
         self.assertIsNotNone(cycle_point)
-        self.assertEqual(cycle_point.value, 450)
+        self.assertEqual(cycle_point.value, 45.0)
 
         # Atomic insert into SQLite local db
         success = self.storage.insert_event_and_queue(event)

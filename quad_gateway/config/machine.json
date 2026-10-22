@@ -23,11 +23,12 @@
     "poll_interval_seconds": 1.0
   },
   "storage": {
-    "database_path": "data/quad_gateway.db"
+    "database_path": "data/quad_gateway.db",
+    "retention_days": 30
   },
   "mqtt": {
     "enabled": true,
-    "host": "172.16.4.104",
+    "host": "192.168.100.136",
     "port": 1883,
     "username": null,
     "password": null,
@@ -39,7 +40,10 @@
     "batch_size": 50,
     "retry_initial_delay": 2.0,
     "retry_max_delay": 60.0,
-    "retry_backoff_factor": 2.0
+    "retry_backoff_factor": 2.0,
+    "ack_timeout_seconds": 300,
+    "sync_interval_seconds": 5,
+    "max_unacked": 200
   },
   "string_decoding": {
     "default_byte_order": "little",
@@ -165,20 +169,6 @@
       "description": "SHOT NO."
     },
     {
-      "tag": "HIGH_SHOT_COUNT",
-      "address": "D947",
-      "data_type": "int16",
-      "unit": null,
-      "description": "HIGH SHOT COUNT"
-    },
-    {
-      "tag": "NG_COUNTER",
-      "address": "D955",
-      "data_type": "int16",
-      "unit": null,
-      "description": "NG COUNTER"
-    },
-    {
       "tag": "CYCLE_START",
       "address": "M840",
       "data_type": "bit",
@@ -217,7 +207,7 @@
       "tag": "CYCLE_TIME",
       "address": "D1127",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.1,
       "unit": "sec",
       "description": "CYCLE TIME"
     },
@@ -865,7 +855,7 @@
       "tag": "SHOT_ACC_PRESSURE",
       "address": "D1700",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.01,
       "unit": "MPa",
       "description": "SHOT ACC. PRESSURE"
     },
@@ -873,7 +863,7 @@
       "tag": "INTENSIFICATION_ACC_PRESSURE",
       "address": "D1701",
       "data_type": "decimal_scaled",
-      "scale_factor": null,
+      "scale_factor": 0.01,
       "unit": "MPa",
       "description": "INTENSIFICATION ACC. PRESSURE"
     },

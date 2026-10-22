@@ -438,7 +438,7 @@ class TestMockPLCToSQLiteIntegration(unittest.TestCase):
     def test_mock_plc_acquisition_and_sqlite_persistence(self):
         """
         Executes real acquisition from MockSLMPServer and verifies persistent storage
-        in SQLite with all 114 registers (+46 calculated points) and PENDING sync_queue entry.
+        in SQLite with all 112 registers (+46 calculated points) and PENDING sync_queue entry.
         """
         config_path = os.path.join(
             os.path.dirname(__file__), "..", "quad_gateway", "config", "machine.json"
@@ -449,12 +449,12 @@ class TestMockPLCToSQLiteIntegration(unittest.TestCase):
         storage = StorageManager(db_path=self.db_path)
         storage.sync_machine_config(config)
 
-        # Verify machine and 114 tags synchronized
+        # Verify machine and 112 tags synchronized
         m = storage.get_machine("UBE-850T-02")
         self.assertIsNotNone(m)
         self.assertEqual(m["machine_id"], "UBE-850T-02")
         tags = storage.get_machine_tags("UBE-850T-02")
-        self.assertEqual(len(tags), 114)
+        self.assertEqual(len(tags), 112)
 
         # Connect driver to Mock PLC
         driver = SLMPDriver(
@@ -470,7 +470,7 @@ class TestMockPLCToSQLiteIntegration(unittest.TestCase):
             # 1. Acquire telemetry cycle
             event = collector.collect_cycle()
             self.assertEqual(event.quality, "GOOD")
-            self.assertEqual(len(event.points), 160)
+            self.assertEqual(len(event.points), 158)
 
             # 2. Persist to SQLite
             persisted = storage.insert_event_and_queue(event)
@@ -483,13 +483,13 @@ class TestMockPLCToSQLiteIntegration(unittest.TestCase):
             self.assertEqual(stored_event["quality"], "GOOD")
 
             payload = stored_event["payload_decoded"]
-            self.assertEqual(len(payload), 160)
+            self.assertEqual(len(payload), 158)
 
             # Check specific registers in SQLite payload
             # PART_NAME (D100)
             self.assertEqual(payload["PART_NAME"]["value"], "PART-UBE-850T02")
             # CYCLE_TIME (D1127)
-            self.assertEqual(payload["CYCLE_TIME"]["value"], 385)
+            self.assertEqual(payload["CYCLE_TIME"]["value"], 38.5)
             self.assertEqual(payload["CYCLE_TIME"]["unit"], "sec")
             # SHOT_NO (D1120)
             self.assertEqual(payload["SHOT_NO"]["value"], 1042)

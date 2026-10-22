@@ -8,6 +8,8 @@ Type=simple
 User=pi
 WorkingDirectory=/home/pi/Device
 Environment=PYTHONUNBUFFERED=1
+# MQTT_USERNAME / MQTT_PASSWORD live here, never in git (leading "-" = optional file)
+EnvironmentFile=-/etc/quad_gateway.env
 ExecStart=/usr/bin/python3 -m quad_gateway.main
 Restart=always
 RestartSec=5

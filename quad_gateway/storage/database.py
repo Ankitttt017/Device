@@ -617,3 +617,119 @@ class StorageManager:
                 return cur.rowcount > 0
         finally:
             conn.close()
+
+    # =========================================================================
+    # SERVER ACK, RESEND & RETENTION API
+    # =========================================================================
+
+    def mark_events_synced(self, event_uuids: List[str]) -> int:
+        """
+        Marks events as SYNCED after the Main Server acknowledged storing them.
+        Returns the number of queue rows that changed (already-SYNCED rows are skipped).
+        """
+        if not event_uuids:
+            return 0
+        now = utc_now_str()
+        changed = 0
+        conn = self.get_connection()
+        try:
+            with conn:
+                for i in range(0, len(event_uuids), 500):
+                    chunk = event_uuids[i:i + 500]
+                    marks = ",".join("?" * len(chunk))
+                    cur = conn.execute(
+                        f"""
+                        UPDATE sync_queue
+                        SET status = 'SYNCED', synced_at = ?, next_attempt_at = NULL,
+                            last_error = NULL, updated_at = ?
+                        WHERE event_uuid IN ({marks}) AND status != 'SYNCED';
+                        """,
+                        (now, now, *chunk),
+                    )
+                    changed += cur.rowcount
+            return changed
+        finally:
+            conn.close()
+
+    def mark_events_failed(self, event_uuids: List[str], error: str, next_attempt_at: Optional[str]) -> int:
+        """
+        Puts events back into the retry queue (status FAILED) after the server reported an error.
+        """
+        if not event_uuids:
+            return 0
+        now = utc_now_str()
+        changed = 0
+        conn = self.get_connection()
+        try:
+            with conn:
+                for i in range(0, len(event_uuids), 500):
+                    chunk = event_uuids[i:i + 500]
+                    marks = ",".join("?" * len(chunk))
+                    cur = conn.execute(
+                        f"""
+                        UPDATE sync_queue
+                        SET status = 'FAILED', last_error = ?, next_attempt_at = ?, updated_at = ?
+                        WHERE event_uuid IN ({marks}) AND status != 'SYNCED';
+                        """,
+                        (error, next_attempt_at, now, *chunk),
+                    )
+                    changed += cur.rowcount
+            return changed
+        finally:
+            conn.close()
+
+    def requeue_unacknowledged(self, sent_before_iso: str) -> int:
+        """
+        Returns SENDING events without a server ACK since sent_before_iso to PENDING,
+        so they are published again (the server ignores duplicates by event_uuid).
+        """
+        now = utc_now_str()
+        conn = self.get_connection()
+        try:
+            with conn:
+                cur = conn.execute(
+                    """
+                    UPDATE sync_queue
+                    SET status = 'PENDING', next_attempt_at = NULL,
+                        last_error = 'No server ACK within timeout', updated_at = ?
+                    WHERE status = 'SENDING' AND last_attempt_at < ?;
+                    """,
+                    (now, sent_before_iso),
+                )
+                return cur.rowcount
+        finally:
+            conn.close()
+
+    def purge_synced_events(self, synced_before_iso: str) -> int:
+        """
+        Deletes events (and their queue rows) that the server confirmed before synced_before_iso.
+        Events that are not SYNCED are never deleted.
+        """
+        conn = self.get_connection()
+        try:
+            with conn:
+                uuids = [
+                    r[0] for r in conn.execute(
+                        "SELECT event_uuid FROM sync_queue WHERE status = 'SYNCED' AND synced_at < ?;",
+                        (synced_before_iso,),
+                    ).fetchall()
+                ]
+                for i in range(0, len(uuids), 500):
+                    chunk = uuids[i:i + 500]
+                    marks = ",".join("?" * len(chunk))
+                    conn.execute(f"DELETE FROM sync_queue WHERE event_uuid IN ({marks});", chunk)
+                    conn.execute(f"DELETE FROM acquisition_events WHERE event_uuid IN ({marks});", chunk)
+                return len(uuids)
+        finally:
+            conn.close()
+
+    def get_sync_status_counts(self) -> Dict[str, int]:
+        """
+        Returns the number of queue rows per status, e.g. {'PENDING': 3, 'SYNCED': 120}.
+        """
+        conn = self.get_connection()
+        try:
+            rows = conn.execute("SELECT status, COUNT(*) FROM sync_queue GROUP BY status;").fetchall()
+            return {r[0]: r[1] for r in rows}
+        finally:
+            conn.close()

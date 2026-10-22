@@ -30,7 +30,7 @@ class TestConfigLoader(unittest.TestCase):
         self.assertIn(config.port, (1026, 1027, 5005))
         self.assertEqual(config.protocol, "SLMP_3E_BINARY")
         self.assertTrue(config.read_only)
-        self.assertEqual(len(config.registers), 114)
+        self.assertEqual(len(config.registers), 112)
 
     def test_parse_device_address(self):
         dev_type, dev_num = parse_device_address("D1127")

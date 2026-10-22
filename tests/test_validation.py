@@ -22,7 +22,7 @@ class TestPLCValidation(unittest.TestCase):
 
     def test_target_registers_exist_in_config(self):
         """
-        Verifies all 7 Phase 1 priority validation registers exist in machine.json.
+        Verifies all 5 Phase 1 priority validation registers exist in machine.json.
         """
         config = load_machine_config(self.config_path)
         configured_tags = {r.tag for r in config.registers}
@@ -35,19 +35,19 @@ class TestPLCValidation(unittest.TestCase):
 
     def test_cycle_time_not_shot_time(self):
         """
-        Verifies D1127 is strictly configured as CYCLE_TIME and has unresolved scale factor.
+        Verifies D1127 is strictly configured as CYCLE_TIME, scaled x0.1 like the production report.
         """
         config = load_machine_config(self.config_path)
         cycle_time_reg = next(r for r in config.registers if r.tag == "CYCLE_TIME")
         self.assertEqual(cycle_time_reg.address, "D1127")
         self.assertEqual(cycle_time_reg.data_type, "decimal_scaled")
         self.assertEqual(cycle_time_reg.unit, "sec")
-        # Scale factor must be None (unresolved - no guessing)
-        self.assertIsNone(cycle_time_reg.scale_factor)
+        # Report shows 71.2 sec for raw 712
+        self.assertEqual(cycle_time_reg.scale_factor, 0.1)
 
     def test_mock_validation_priority_subset(self):
         """
-        Verifies running validation against mock PLC succeeds for the 7 priority registers.
+        Verifies running validation against mock PLC succeeds for the 5 priority registers.
         """
         success, summary = run_plc_validation(
             config_path=self.config_path,
@@ -56,13 +56,13 @@ class TestPLCValidation(unittest.TestCase):
         )
         self.assertTrue(success)
         self.assertIsNotNone(summary)
-        self.assertEqual(summary["points_count"], 7)
+        self.assertEqual(summary["points_count"], 5)
         self.assertEqual(summary["quality"], "GOOD")
         self.assertTrue(summary["all_good"])
 
     def test_mock_validation_all_registers(self):
         """
-        Verifies running validation with all_registers=True covers all 114 registers.
+        Verifies running validation with all_registers=True covers all 112 registers.
         """
         success, summary = run_plc_validation(
             config_path=self.config_path,
@@ -71,7 +71,7 @@ class TestPLCValidation(unittest.TestCase):
         )
         self.assertTrue(success)
         self.assertIsNotNone(summary)
-        self.assertEqual(summary["points_count"], 114)
+        self.assertEqual(summary["points_count"], 112)
         self.assertEqual(summary["quality"], "GOOD")
 
     def test_unreachable_plc_fails_safely(self):

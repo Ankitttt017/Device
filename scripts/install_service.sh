@@ -28,6 +28,18 @@ echo "Project Directory:  ${PROJECT_DIR}"
 echo "Python Executable:  ${PYTHON_EXEC}"
 echo "-----------------------------------------------------------------"
 
+# Private MQTT credentials file (never committed to git). Created once with a template.
+ENV_FILE="/etc/quad_gateway.env"
+if [ ! -f "${ENV_FILE}" ]; then
+    sudo bash -c "cat <<EOF > ${ENV_FILE}
+# QUAD Gateway MQTT broker credentials
+MQTT_USERNAME=
+MQTT_PASSWORD=
+EOF"
+    sudo chmod 600 "${ENV_FILE}"
+    echo "Created ${ENV_FILE} (fill in MQTT_USERNAME / MQTT_PASSWORD, then restart the service)."
+fi
+
 # Write systemd service file with detected parameters
 sudo bash -c "cat <<EOF > ${TARGET_SERVICE}
 [Unit]
@@ -40,6 +52,7 @@ Type=simple
 User=${CURRENT_USER}
 WorkingDirectory=${PROJECT_DIR}
 Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-${ENV_FILE}
 ExecStart=${PYTHON_EXEC} -m quad_gateway.main
 Restart=always
 RestartSec=5

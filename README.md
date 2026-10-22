@@ -72,7 +72,7 @@ Device/
 | Category | Count | Registers |
 | :--- | :--- | :--- |
 | **String / ASCII** | 1 | `Part Name` (D100-D110, 11 words / 22 bytes) |
-| **INT16** | 14 | `Shot Year` (D2100), `Shot Month` (D2101), `Shot Day` (D2102), `Shot Hour` (D2103), `Shot Minute` (D2104), `Shot Second` (D2105), `SHOT NO.` (D1120), `HIGH SHOT COUNT` (D947), `NG COUNTER` (D955), `Cycle Start` (M840), `Cycle End` (M4598), `AVERAGE DIE CLAMP TONNAGE COUNT` (D7472), `Time for stroke(ms)` (D10470), `Shot Status` (D1301) |
+| **INT16** | 12 | `Shot Year` (D2100), `Shot Month` (D2101), `Shot Day` (D2102), `Shot Hour` (D2103), `Shot Minute` (D2104), `Shot Second` (D2105), `SHOT NO.` (D1120), `Cycle Start` (M840), `Cycle End` (M4598), `AVERAGE DIE CLAMP TONNAGE COUNT` (D7472), `Time for stroke(ms)` (D10470), `Shot Status` (D1301) |
 | **Decimal / Scaled D** | 45 | `CYCLE TIME` (D1127), `DIE-CLOSE CORE IN TIME` (D1128), `POURING TIME` (D1129), `SHOT FWD TIME` (D1130), `DIE OPEN CORE OUT TIME` (D1132), `EJECTOR TIME` (D1133), `EXTRACT TIME` (D1134), `SPRAY TIME` (D1135), `CURING TIME` (D1137), `V1`..`V4` (D6900..D6906), `ACCEL. POINT` (D6908), `DEACEL. POINT` (D6910), `METAL PRESS.` (D6912), `INTEN. TIME` (D6914), `BISCUIT THICKNESS` (D6916), `CLAMP TONNAGE` (D6918..D6926), `VACUUM PRESSURE` (D6928), `COOLING WATER FLOW` (D6930..D6932), `FURNACE TEMP` (D6934), `CLAMP FORCE / TONNAGE` (D1044..D1045), `SHOT ACC / INTEN ACC` (D1700..D1701), `JET COOLING` (D6954), `DIE TEMPS` (D1400..D1404), `FLOWS` (D1410..D1415), `VACUUM` (D1416), `STROKE` (D10356) |
 
 ---
